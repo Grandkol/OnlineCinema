@@ -13,12 +13,13 @@ PROJECT_NAME = os.getenv('PROJECT_NAME', 'movies')
 
 class Settings(BaseSettings):
     # Настройки Redis
-    REDIS_HOST: str = Field("127.0.0.1", env="REDIS_HOST")
-    REDIS_PORT: int = Field(6379, env="REDIS_PORT")
+    redis_host: str = Field("127.0.0.1", env="REDIS_HOST")
+    redis_port: int = Field(6379, env="REDIS_PORT")
 
     # Настройки Elasticsearch
-    ELASTIC_HOST: str = Field("127.0.0.1", env="ELASTIC_HOST")
-    ELASTIC_PORT: int = Field(9200, env="ELASTIC_PORT")
+    elastic_schema: str = Field('http://', env="ELASTIC_SCHEMA")
+    elastic_host: str = Field("127.0.0.1", env="ELASTIC_HOST")
+    elastic_port: int = Field(9200, env="ELASTIC_PORT")
 
     # Корень проекта
-    BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    base_dir: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
