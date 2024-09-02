@@ -1,0 +1,16 @@
+from __future__ import annotations
+from typing import List,Dict
+
+from typing import Union
+from pydantic import BaseModel
+
+
+class Film(BaseModel):
+    id: str
+    title: str
+    imdb_rating: Union[str, None] = None
+    description: Union[str, None] = None
+    genres: Union[List[str], None] = None
+    actors: Union[List[Dict], None] = None
+    writers: Union[List[Dict], None] = None
+    directors: Union[List[Dict], None] = None
