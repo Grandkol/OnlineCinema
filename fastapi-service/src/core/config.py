@@ -11,15 +11,12 @@ logging_config.dictConfig(LOGGING)
 # Название проекта. Используется в Swagger-документации
 PROJECT_NAME = os.getenv('PROJECT_NAME', 'movies')
 
-class Settings(BaseSettings):
-    # Настройки Redis
-    redis_host: str = Field("127.0.0.1", env="REDIS_HOST")
-    redis_port: int = Field(6379, env="REDIS_PORT")
+REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')
+REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
 
-    # Настройки Elasticsearch
-    elastic_schema: str = Field('http://', env="ELASTIC_SCHEMA")
-    elastic_host: str = Field("127.0.0.1", env="ELASTIC_HOST")
-    elastic_port: int = Field(9200, env="ELASTIC_PORT")
+# Настройки Elasticsearch
+ELASTIC_HOST = os.getenv('ELASTIC_HOST', '127.0.0.1')
+ELASTIC_PORT = int(os.getenv('ELASTIC_PORT', 9200))
 
-    # Корень проекта
-    base_dir: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Корень проекта
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
