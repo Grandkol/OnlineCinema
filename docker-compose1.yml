@@ -1,5 +1,12 @@
 services:
 
+  etl:
+    image: etl_image
+    build:
+      context: .
+      dockerfile: /home/stupenko/python/my_app/new_admin_panel_sprint_3/app/Dockerfile
+    depends_on: 
+
   script:
     tty: true
     container_name: script

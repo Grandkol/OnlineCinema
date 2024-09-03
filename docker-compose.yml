@@ -1,5 +1,20 @@
 services:
 
+  etl:
+    tty: true
+    container_name: etl
+    image: etl_image
+    build:
+      context: /home/stupenko/python/my_app/new_admin_panel_sprint_3/app/
+      dockerfile: /home/stupenko/python/my_app/new_admin_panel_sprint_3/app/Dockerfile
+    depends_on: 
+      - redis
+      - elasticsearch
+      - postgres
+    env_file: /home/stupenko/python/my_app/new_admin_panel_sprint_3/app/.env.dist
+    networks:
+      - my_network
+
   redis:
     container_name: redis
     image: redis:latest
@@ -17,7 +32,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
     volumes:
-      - ./database_dump.sql:/docker-entrypoint-initdb.d/database_dump.sql
+      - /home/stupenko/python/my_app/new_admin_panel_sprint_3/database_dump.sql:/docker-entrypoint-initdb.d/database_dump.sql
     networks:
       - my_network
     restart: on-failure

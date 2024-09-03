@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     redis_port: int = Field(6379, env="REDIS_PORT")
 
     # Настройки Elasticsearch
-    # elastic_schema: str = Field('http://', env="ELASTIC_SCHEMA")
+    elastic_schema: str = Field('http://', env="ELASTIC_SCHEMA")
     elastic_host: str = Field("127.0.0.1", env="ELASTIC_HOST")
     elastic_port: int = Field(9200, env="ELASTIC_PORT")
 
