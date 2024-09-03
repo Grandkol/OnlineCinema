@@ -83,23 +83,6 @@ class FilmService:
             return None
         return Film(**doc['_source'])
 
-
-
-    # async def _get_film_from_elastic(
-    #     self,
-    #     film_id: str,
-    # ) -> Optional[Film]:
-    #     try:
-    #         doc = await self.elastic.get(
-    #             index="movies",
-    #             id=film_id,
-    #         )
-    #         return Film.parse_from_elastic(doc)
-    #     except NotFoundError:
-    #         return None
-
-
-
     async def _film_from_cache(self, film_id: str) -> Optional[Film]:
         data = await self.redis.get(film_id)
         if not data:
