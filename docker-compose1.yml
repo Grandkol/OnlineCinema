@@ -1,25 +1,32 @@
 services:
 
-  redis:
-    container_name: redis
-    image: redis:latest
-    ports:
-      - 6379:6379
-    networks:
-      - my_network
+  script:
+    tty: true
+    container_name: script
+    image: my_script
+    build:
+      context: app/
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres-1
+      - elasticsearch
     restart: on-failure
+    networks:
+      - etl_network
 
-  postgres:
-    container_name: postgres
+  postgres-1:
+    container_name: postgres-2
     image: postgres:latest
+    ports:
+      - 5432:5432
+    volumes:
+      - ./database_dump.sql:/docker-entrypoint-initdb.d/database_dump.sql
     environment:
       - POSTGRES_PASSWORD=123
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
-    volumes:
-      - ./database_dump.sql:/docker-entrypoint-initdb.d/database_dump.sql
     networks:
-      - my_network
+      - etl_network
     restart: on-failure
 
   elasticsearch:
@@ -32,9 +39,10 @@ services:
     ports:
       - 9200:9200
     networks:
-      - my_network
+      - etl_network
     restart: on-failure
 
 networks:
-  my_network:
-    name: my_network
+  etl_network:
+    name: etl_network
+  

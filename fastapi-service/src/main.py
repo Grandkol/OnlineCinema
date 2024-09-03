@@ -6,7 +6,7 @@ from redis.asyncio import Redis
 
 from api.v1 import films
 from core import config
-from core.config import Settings as settings
+from core.config import settings
 from db import elastic
 from db import redis
 
@@ -24,7 +24,7 @@ async def startup():
     # Подключиться можем при работающем event-loop
     # Поэтому логика подключения происходит в асинхронной функции
     redis.redis = Redis(host=settings.redis_host, port=settings.redis_port)
-    elastic.es = AsyncElasticsearch(hosts=[f'{settings.elastic_host}:{settings.elastic_port}'])
+    elastic.es = AsyncElasticsearch(hosts=[f'http://{settings.elastic_host}:{settings.elastic_port}'])
 
 
 @app.on_event('shutdown')
