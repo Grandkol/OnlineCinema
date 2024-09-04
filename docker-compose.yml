@@ -1,6 +1,26 @@
 version: '3'
 services:
 
+
+  fast-api:
+    build: ./fastapi-service
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - 8000:8000
+
+  etl:
+    build: ./etl
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - 3001:3001
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
   theatre-db:
     image: postgres:16
     ports:
