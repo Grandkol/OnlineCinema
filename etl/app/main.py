@@ -226,6 +226,7 @@ class Transform:
         """
         result = {}
         for row in data:
+            found = False
             current_movie = result.setdefault(str(row["fw_id"]), {})
             if not current_movie:
                 current_movie["id"] = str(row["fw_id"])
@@ -238,7 +239,11 @@ class Transform:
                     current_movie[role] = []
                     current_movie[f"{role}_names"] = []
             genres = current_movie.setdefault("genres", [])
-            if row["name"] not in genres:
+            for genre in genres:
+                if genre['id'] == str(row["g_id"]):
+                    found = True
+                    break
+            if not found:
                 genres.append({'id': str(row["g_id"]), 'name': str(row["name"])})
             role = row["role"]
             if role == "director":
