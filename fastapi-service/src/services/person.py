@@ -6,6 +6,8 @@ from fastapi import Depends
 from redis.asyncio import Redis
 from pydantic import BaseModel
 
+from services import film
+from models.film import Film
 from models.person import Person
 from db.elastic import get_elastic
 from db.redis import get_redis
@@ -27,6 +29,19 @@ class PersonService:
             # await self._put_to_cache(person)
         return person
     
+    async def get_movie_by_person(self, person_id: str):
+        person_data = await self.get_by_id(person_id)
+        result_data = []
+        for movie in person_data.films:
+            movie_id = movie['id']
+            movie_data = await film.get_film_service(self.redis, self.elastic).get_by_id(movie_id)
+            result_data.append(Film(id=movie_data.id,
+                                    title=movie_data.title,
+                                    imdb_rating=movie_data.imdb_rating                                   
+                                    ))
+        return result_data
+
+
     async def _get_from_elastic(self, person_id: str):
         try:
             person = await self.elastic.get(index='persons', id=person_id)
