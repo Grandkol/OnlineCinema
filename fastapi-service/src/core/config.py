@@ -2,9 +2,11 @@ import os
 from logging import config as logging_config
 from pydantic_settings import BaseSettings
 from pydantic import Field
+from dotenv import load_dotenv
 
 from core.logger import LOGGING
 
+# load_dotenv('../../../.env')
 # Применяем настройки логирования
 logging_config.dictConfig(LOGGING)
 
@@ -20,3 +22,4 @@ ELASTIC_PORT = int(os.getenv('ELASTIC_PORT', 9200))
 
 # Корень проекта
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+

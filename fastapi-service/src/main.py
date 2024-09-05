@@ -4,8 +4,10 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from redis.asyncio import Redis
 
+from api.v1 import persons
 from api.v1 import films
 from core import config
+
 from db import elastic
 from db import redis
 
@@ -24,6 +26,7 @@ async def startup():
     elastic.es = AsyncElasticsearch('http://127.0.0.1:9200')
 
 
+
 @app.on_event('shutdown')
 async def shutdown():
     await redis.redis.close()
@@ -31,3 +34,4 @@ async def shutdown():
 
 
 app.include_router(films.router, prefix='/api/v1/films', tags=['films'])
+app.include_router(persons.router, prefix='/api/v1/persons', tags=['persons'])
