@@ -140,7 +140,7 @@ class BaseExtractor(AbstractExtractor):
 class ExtractFilmWork(BaseExtractor):
 
     def extract_data(self):
-        current_state = self.state.get_storage("film_work") or "1111-11-11"
+        current_state = self.state.get_storage("movies") or "1111-11-11"
         statement = f"""SELECT id, modified FROM "content"."film_work"
                         WHERE modified > '{current_state}'
                         ORDER BY modified
