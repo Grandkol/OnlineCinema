@@ -59,7 +59,7 @@ def load_config(path: str = "./.env") -> Config:
             port=os.environ.get("DB_PORT", 5432),
             db_name=os.environ.get("DB_NAME"),
             user=os.environ.get("DB_USER"),
-            password=os.environ.get("DB_PASSWORD"),
+            password=os.environ.get("POSTGRES_PASSWORD"),
         ),
         elasticsearch=Elasticsearch(
             index_name=os.environ.get("ES_INDEX"),
@@ -71,7 +71,7 @@ def load_config(path: str = "./.env") -> Config:
             file_name=os.environ.get("STATE_FILE"),
         ),
         extractor=Extractor(
-            limit=os.environ.get("LIMIT"),
+            limit=os.environ.get("LIMIT", 200),
         ),
         logger=Logger(file_name=os.environ.get("LOGGER_FILE", None)),
     )

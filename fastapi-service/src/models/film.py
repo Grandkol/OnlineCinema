@@ -10,7 +10,7 @@ class Film(BaseModel):
     title: str
     imdb_rating: Union[float, None] = None
     description: Union[str, None] = None
-    genres: Union[List[str], None] = None
+    genres: Union[List[Dict], None] = None
     actors: Union[List[Dict], None] = None
     writers: Union[List[Dict], None] = None
     directors: Union[List[Dict], None] = None

@@ -4,10 +4,10 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from redis.asyncio import Redis
 
-from api.v1 import films
-from core import config
-from db import elastic
-from db import redis
+from .api.v1 import films
+from .core import config
+from .db import elastic
+from .db import redis
 
 app = FastAPI(
     title=config.PROJECT_NAME,
@@ -21,7 +21,7 @@ app = FastAPI(
 async def startup():
     # print(settings.redis_host)
     redis.redis = Redis(host=config.REDIS_HOST, port=config.REDIS_PORT)
-    elastic.es = AsyncElasticsearch('http://127.0.0.1:9200')
+    elastic.es = AsyncElasticsearch(config.ELASTIC_HOST)
 
 
 @app.on_event('shutdown')

@@ -6,9 +6,9 @@ from fastapi import Depends
 from redis.asyncio import Redis
 from pydantic import BaseModel
 
-from models.film import Film, FilmList
-from db.elastic import get_elastic
-from db.redis import get_redis
+from src.models.film import Film, FilmList
+from src.db.elastic import get_elastic
+from src.db.redis import get_redis
 
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
