@@ -3,6 +3,7 @@ from logging import config as logging_config
 
 from .logger import LOGGING
 
+# load_dotenv('../../../.env')
 # Применяем настройки логирования
 logging_config.dictConfig(LOGGING)
 
@@ -18,3 +19,4 @@ ELASTIC_PORT = int(os.getenv('ELASTIC_PORT', 9200))
 
 # Корень проекта
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+

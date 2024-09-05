@@ -58,4 +58,8 @@ services:
 
 volumes:
   redis:
+<<<<<<< HEAD
   elastic:
+=======
+  es:
+>>>>>>> feature/services_person_genre

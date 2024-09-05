@@ -58,10 +58,6 @@
             "type": "text",
             "analyzer": "ru_en"
           },
-        "movies_names": {
-          "type": "text",
-          "analyzer": "ru_en"
-        },
         "movies": {
           "type": "nested",
           "dynamic": "strict",

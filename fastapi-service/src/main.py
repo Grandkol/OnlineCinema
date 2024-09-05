@@ -9,6 +9,7 @@ from .core import config
 from .db import elastic
 from .db import redis
 
+
 app = FastAPI(
     title=config.PROJECT_NAME,
     docs_url='/api/openapi',
@@ -24,6 +25,7 @@ async def startup():
     elastic.es = AsyncElasticsearch(config.ELASTIC_HOST)
 
 
+
 @app.on_event('shutdown')
 async def shutdown():
     await redis.redis.close()
@@ -31,3 +33,4 @@ async def shutdown():
 
 
 app.include_router(films.router, prefix='/api/v1/films', tags=['films'])
+app.include_router(persons.router, prefix='/api/v1/persons', tags=['persons'])
