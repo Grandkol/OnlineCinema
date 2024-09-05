@@ -95,6 +95,7 @@ class BaseExtractor(AbstractExtractor):
                 p.id, 
                 p.full_name,
                 g.name,
+                g.description as g_descr,
                 g.id as g_id
             FROM content.film_work fw
             LEFT JOIN content.person_film_work pfw ON pfw.film_work_id = fw.id
@@ -266,33 +267,38 @@ class Transform:
     def prepare_data_persons(self, data: list):
         result = {}
         for row in data:
+            found = False
             current_person = result.setdefault(str(row['id']), {})
             if not current_person:
                 current_person['id'] = str(row['id'])
                 current_person['full_name'] = str(row['full_name'])
-            movies = current_person.setdefault('movies_names', [])
+            # movies = current_person.setdefault('movies_names', [])
             movie_data = current_person.setdefault('movies', [])
-            if row['title'] not in movies:
+            for movie in movie_data:
+                if movie['id'] == str(row['id']):
+                    movie['roles'].append(row['role'])
+                    found = True
+            if not found:
                 movie_data.append({'id': str(row['fw_id']), 'roles': [row['role']]})
-                movies.append(row['title'])
-            else:
-                for mov in movie_data:
-                    if str(row['id']) == mov['id'] and row['role'] not in mov['roles']:
-                        mov['roles'].append(row['role'])
         return result
     
 
     def prepare_data_genres(self, data: list):
         result = {}
         for row in data:
+            found = False
             current_genre = result.setdefault(str(row['g_id']), {})
             if not current_genre:
                 current_genre['id'] = str(row['g_id'])
                 current_genre['name'] = row['name']
-            movies = current_genre.setdefault('movies_names', [])
-            if row['title'] not in movies:
-                current_genre.setdefault('movies', []).append({'id': str(row['fw_id']), 'title': row['title']})
-                movies.append(row['title'])
+                current_genre['description'] = row['g_descr']
+            movies = current_genre.setdefault('movies',[])
+            for movie in movies:
+                if str(row['fw_id']) == movie['id']:
+                    found = True
+                    break
+            if not found:
+                movies.append({'id': str(row['fw_id']), 'title': row['title']})
         return result
 
 
