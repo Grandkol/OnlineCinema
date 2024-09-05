@@ -19,12 +19,12 @@ class PersonService:
         self.elastic = elastic
 
     async def get_by_id(self, person_id: str):
-        person = self._get_from_cache(person_id)
+        person = await self._get_from_cache(person_id)
         if not person:
-            person = self._get_from_elastic(person_id)
+            person = await self._get_from_elastic(person_id)
             if not person:
                 return None
-            self._put_to_cache(person)
+            # await self._put_to_cache(person)
         return person
     
     async def _get_from_elastic(self, person_id: str):
@@ -32,7 +32,8 @@ class PersonService:
             person = await self.elastic.get(index='persons', id=person_id)
         except NotFoundError:
             return None
-        return Person(**person['_source'])
+        data = person['_source']
+        return Person(id=data['id'], films=data['movies'], full_name=data['full_name'])
     
     async def _get_from_cache(self, person_id: str):
         data = await self.redis.get(person_id)
