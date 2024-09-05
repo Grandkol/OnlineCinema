@@ -52,7 +52,7 @@ def load_config(path: str = "./.env") -> Config:
     Returns:
         Сonfig: Объект конфига с прочитанными значениями.
     """
-    load_dotenv()
+    # load_dotenv('../../.env')
     return Config(
         postgres=Postgres(
             host=os.environ.get("DB_HOST", "127.0.0.1"),
@@ -63,7 +63,7 @@ def load_config(path: str = "./.env") -> Config:
         ),
         elasticsearch=Elasticsearch(
             index_name=os.environ.get("ES_INDEX"),
-            host=os.environ.get("ES_HOST", "127.0.0.1"),
+            host=os.environ.get("ELASTIC_HOST", "127.0.0.1"),
             port=os.environ.get("ES_PORT", 9200),
             file_schema=os.environ.get("ES_SCHEMA"),
         ),
