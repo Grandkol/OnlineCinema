@@ -65,11 +65,7 @@
             "id": {
               "type": "keyword"
             },
-            "title": {
-              "type": "text",
-              "analyzer": "ru_en"
-            },
-            "role": {
+            "roles": {
               "type": "text",
               "analyzer": "ru_en"
             }

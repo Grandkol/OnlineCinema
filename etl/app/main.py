@@ -271,9 +271,14 @@ class Transform:
                 current_person['id'] = str(row['id'])
                 current_person['full_name'] = str(row['full_name'])
             movies = current_person.setdefault('movies_names', [])
+            movie_data = current_person.setdefault('movies', [])
             if row['title'] not in movies:
-                current_person.setdefault('movies', []).append({'id': str(row['fw_id']), 'title': row['title'], 'role': row['role']})
+                movie_data.append({'id': str(row['fw_id']), 'roles': [row['role']]})
                 movies.append(row['title'])
+            else:
+                for mov in movie_data:
+                    if str(row['id']) == mov['id'] and row['role'] not in mov['roles']:
+                        mov['roles'].append(row['role'])
         return result
     
 
