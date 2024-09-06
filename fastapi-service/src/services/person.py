@@ -7,7 +7,7 @@ from redis.asyncio import Redis
 from pydantic import BaseModel
 
 from services import film
-from models.film import Film
+from models.film import FilmList
 from models.person import Person
 from db.elastic import get_elastic
 from db.redis import get_redis
@@ -26,9 +26,10 @@ class PersonService:
         self.elastic = elastic
 
     async def get_by_id(self, person_id: str):
-        person = await self._get_from_cache(person_id)
+        key = f'persons:{person_id}'
+        person = await self._get_from_cache(key)
         if not person:
-            person = await self._get_from_elastic(person_id)
+            person = await self._get_from_elastic(key)
             if not person:
                 return None
             # await self._put_to_cache(person)
@@ -40,7 +41,7 @@ class PersonService:
         for movie in person_data.films:
             movie_id = movie['id']
             movie_data = await film.get_film_service(self.redis, self.elastic).get_by_id(movie_id)
-            result_data.append(Film(id=movie_data.id,
+            result_data.append(FilmList(id=movie_data.id,
                                     title=movie_data.title,
                                     imdb_rating=movie_data.imdb_rating                                   
                                     ))
@@ -48,21 +49,16 @@ class PersonService:
 
     async def search_person(self, query: str, page_number: int, page_size: int):
         statement = {
-
         "match": {
-
             "full_name": {
                 "query": query, 
                 "fuzziness": "auto",
-
             }
         }
     }
-        logger.info(statement)
         from_ = (page_number - 1) * page_size
         persons = await self._search_from_elastic(size=page_size, from_=from_, query=statement )
         persons = persons['hits']['hits']
-        logger.info(persons)
         return [Person(**person['_source']) for person in persons]
 
     async def _search_from_elastic(self, size: int, from_: int, query: dict):
@@ -76,8 +72,24 @@ class PersonService:
         except NotFoundError:
             return None
         data = person['_source']
-        return Person(id=data['id'], films=data['movies'], full_name=data['full_name'])
+        return Person(**data)
     
+
+    async def get_all(self, page_size: int, page_number: int):
+        return [Person(**person['_source']) for person in await self._get_all_from_elastic(page_size, page_number)]
+
+
+    async def _get_all_from_elastic(self, page_size: int, page_number: int):
+        doc = {
+                'match_all' : {}
+                }
+        page_number = (page_number - 1) * page_size
+        persons = await self.elastic.search(index='persons', query=doc, from_=page_number, size=page_size)
+        persons = persons['hits']['hits']
+        return persons
+
+
+
     async def _get_from_cache(self, person_id: str):
         data = await self.redis.get(person_id)
         if not data:
@@ -85,28 +97,8 @@ class PersonService:
         person = Person.parse_raw(data)
         return person
     
-    async def _put_to_cache(self, person: Person):
-        await self.redis.set(person.id, person.json(), PERSON_MAX_CACHE_TIMEOUT)
-
-
-    async def get_all(self):
-        persons = self._get_all_from_elastic()
-        for person in self._get_all_from_elastic():
-            yield Person(**person['_source'])
-
-
-    async def _get_all_from_elastic(self):
-        doc = {
-            'size' : 10000,
-            'query': {
-                'match_all' : {}
-                }
-            }
-        persons = self.elastic.search(index='person', query=doc)
-        for person in persons:
-            yield person
-
-
+    async def _put_to_cache(self, key: str, person: Person | list):
+            await self.redis.set(key, person.json(), PERSON_MAX_CACHE_TIMEOUT)
 
 @lru_cache
 def get_person_service(

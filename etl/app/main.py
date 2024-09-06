@@ -280,9 +280,9 @@ class Transform:
             # movies = current_person.setdefault('movies_names', [])
             movie_data = current_person.setdefault('films', [])
             for movie in movie_data:
-                if movie['id'] == str(row['id']):
+                found = True
+                if movie['id'] == str(row['fw_id']) and row['role'] not in movie['roles']:
                     movie['roles'].append(row['role'])
-                    found = True
             if not found:
                 movie_data.append({'id': str(row['fw_id']), 'roles': [row['role']]})
         return result
