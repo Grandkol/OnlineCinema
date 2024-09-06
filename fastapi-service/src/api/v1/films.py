@@ -13,8 +13,8 @@ router = APIRouter()
 @router.get('/search', response_model=List[FilmList])
 async def film_detail_list(film_service: FilmService = Depends(get_film_service),
                            query: Union[str, None] = None,
-                           page_size: Union[int, None] = None,
-                           page_number: Union[int, None] = None,
+                           page_size: Union[int, None] = 50,
+                           page_number: Union[int, None] = 1,
                            sort: Union[str, None] = None,
                            genre: Union[str, None] = None,
                            ) -> List[Film]:
