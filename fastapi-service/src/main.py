@@ -4,11 +4,11 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from redis.asyncio import Redis
 
-from .api.v1 import persons
-from .api.v1 import films
-from .core import config
-from .db import elastic
-from .db import redis
+from api.v1 import persons
+from api.v1 import films
+from core import config
+from db import elastic
+from db import redis
 
 
 app = FastAPI(
@@ -23,7 +23,7 @@ app = FastAPI(
 async def startup():
     # print(settings.redis_host)
     redis.redis = Redis(host=config.REDIS_HOST, port=config.REDIS_PORT)
-    elastic.es = AsyncElasticsearch(config.ELASTIC_HOST)
+    elastic.es = AsyncElasticsearch(f'http://{config.ELASTIC_HOST}:{config.ELASTIC_PORT}')
 
 
 

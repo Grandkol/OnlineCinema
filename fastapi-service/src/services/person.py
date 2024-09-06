@@ -11,6 +11,11 @@ from models.film import Film
 from models.person import Person
 from db.elastic import get_elastic
 from db.redis import get_redis
+import logging
+
+logger = logging.getLogger('person')
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.INFO)
 
 
 PERSON_MAX_CACHE_TIMEOUT = 60 * 5
@@ -40,6 +45,26 @@ class PersonService:
                                     imdb_rating=movie_data.imdb_rating                                   
                                     ))
         return result_data
+
+    async def search_person(self, query: str, page_number: int, page_size: int):
+        logger.info(query)
+        statement = {
+        "match": {
+            "full_name": {
+                "query": query, 
+                "fuzziness": "auto",
+                # "size": page_size,
+                # "current": page_number
+            }
+        }
+    }
+        persons = await self._search_from_elastic(query=statement)
+
+        logger.info(persons)
+
+    async def _search_from_elastic(self, query: dict):
+        persons = await self.elastic.search(index='persons', query=query)
+        return persons
 
 
     async def _get_from_elastic(self, person_id: str):
