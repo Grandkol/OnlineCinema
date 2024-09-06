@@ -47,9 +47,10 @@ class PersonService:
         return result_data
 
     async def search_person(self, query: str, page_number: int, page_size: int):
-        logger.info(query)
         statement = {
+
         "match": {
+
             "full_name": {
                 "query": query, 
                 "fuzziness": "auto",
@@ -57,14 +58,15 @@ class PersonService:
             }
         }
     }
-        from_ = (page_size - 1) * page_number
+        logger.info(statement)
+        from_ = (page_number - 1) * page_size
         persons = await self._search_from_elastic(size=page_size, from_=from_, query=statement )
         persons = persons['hits']['hits']
         logger.info(persons)
         return [Person(**person['_source']) for person in persons]
 
     async def _search_from_elastic(self, size: int, from_: int, query: dict):
-        persons = await self.elastic.search(index='persons', query=query, size=size, from_=from_)
+        persons = await self.elastic.search(index='persons', query=query, from_=int(from_), size=int(size))
         return persons
 
 

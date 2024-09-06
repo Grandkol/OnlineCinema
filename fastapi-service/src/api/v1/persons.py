@@ -11,7 +11,7 @@ from uuid import UUID
 
 router = APIRouter()
 
-@router.get('/search', response_model=Person)
+@router.get('/search', response_model=list[Person])
 async def person_search(query: str = '', 
                         page_number: int = 1, 
                         page_size: int = 50,
