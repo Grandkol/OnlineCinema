@@ -1,8 +1,13 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Union, Dict
 
 
-class Genre(BaseModel):
+
+class BaseGenre(BaseModel):
     id: str
     name: str
-    description: str = None
+    description: Union[str, None] = None
+
+
+class Genre(BaseGenre):
+    movies: List[Dict[str, str]]
