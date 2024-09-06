@@ -2,8 +2,8 @@ from pydantic import BaseModel
 
 
 
-PERSON_MAX_CACHE_TIMEOUT = 60 * 5
-GENRE_MAX_CACHE_TIMEOUT = 60 * 5
+MAX_CACHE_TIMEOUT = 60 * 5
+
 
 class BaseCacheService:
     model = None
@@ -15,5 +15,9 @@ class BaseCacheService:
         person = self.model.parse_raw(data)
         return person
     
-    async def _put_to_cache(self, key: str, model: BaseModel):
-            await self.redis.set(key, model.json(), PERSON_MAX_CACHE_TIMEOUT)
+    async def _put_to_cache(self, key: str, model: BaseModel | list[BaseModel]):
+        if isinstance(model, list):
+            for indx, item in enumerate(model):
+                await self.redis.set(f'{key}:{indx}', item.json(), MAX_CACHE_TIMEOUT)
+        else:
+            await self.redis.set(key, model.json(), MAX_CACHE_TIMEOUT)

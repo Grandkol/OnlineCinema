@@ -18,9 +18,12 @@ logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.INFO)
 
 
-PERSON_MAX_CACHE_TIMEOUT = 60 * 5
+
 
 class PersonService:
+    model = Person
+    
+
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         self.redis = redis
         self.elastic = elastic
