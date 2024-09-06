@@ -64,6 +64,27 @@ class FilmService:
                         "fuzziness": "AUTO",
                     }
                 }
+            if genre:
+                body_query["sort"] = {
+                    "genres.id": {
+                        "mode": "max",
+                        "order": "asc",
+                        "nested": {
+                          "path": "genres",
+                          "filter": {
+                            "bool": {
+                              "must": [
+                                {
+                                  "match": {
+                                    "genres.id": genre
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                    }
+                }
 
             doc = await self.elastic.search(
                 index="movies",
