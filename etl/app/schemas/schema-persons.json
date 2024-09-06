@@ -54,7 +54,7 @@
             }
           }
         },
-        "movies": {
+        "films": {
           "type": "nested",
           "dynamic": "strict",
           "properties": {

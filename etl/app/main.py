@@ -278,7 +278,7 @@ class Transform:
                 current_person['id'] = str(row['id'])
                 current_person['full_name'] = str(row['full_name'])
             # movies = current_person.setdefault('movies_names', [])
-            movie_data = current_person.setdefault('movies', [])
+            movie_data = current_person.setdefault('films', [])
             for movie in movie_data:
                 if movie['id'] == str(row['id']):
                     movie['roles'].append(row['role'])

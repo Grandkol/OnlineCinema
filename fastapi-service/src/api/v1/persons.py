@@ -17,6 +17,10 @@ async def person_search(query: str = '',
                         page_size: int = 50,
                         person_service: PersonService = Depends(get_person_service)):
     persons = await person_service.search_person(query, page_number, page_size )
+    if not persons:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='personsss not found')
+    return persons
+
     
 
 @router.get('/{person_id}', response_model=Person)
