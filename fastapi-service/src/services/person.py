@@ -18,7 +18,7 @@ logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.INFO)
 
 
-
+PERSON_MAX_CACHE_TIMEOUT = 5
 
 class PersonService:
     model = Person
