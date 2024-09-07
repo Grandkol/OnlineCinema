@@ -42,10 +42,10 @@ services:
     restart: always
     ports:
       - 9200:9200
-    volumes:
-      - elastic:/usr/share/elasticsearch/data
+    # volumes:
+    #   - elastic:/usr/share/elasticsearch/data
     environment:
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - discovery.type=single-node
       - xpack.security.enabled=false
     healthcheck:

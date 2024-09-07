@@ -1,6 +1,7 @@
+from typing import Dict, List, Union
+
 from pydantic import BaseModel
 
-from typing import Union, List, Dict
 
 class Person(BaseModel):
     id: str

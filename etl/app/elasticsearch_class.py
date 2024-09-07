@@ -1,10 +1,12 @@
+import time
+
 import elasticsearch
 from backoff import backoff
 from config import load_config
 from elasticsearch import helpers
 from elasticsearch.exceptions import RequestError
 from main_logger import MainLogger
-import time
+
 logger = MainLogger().get_logger("elastic")
 
 
@@ -16,7 +18,7 @@ class ElasticSearchLoader:
             f"http://{self.config.host}:{self.config.port}"
         )
 
-    def _load_schema(self, index:str) -> str:
+    def _load_schema(self, index: str) -> str:
         """Функция читает схему из файла
 
         Args:
@@ -25,7 +27,7 @@ class ElasticSearchLoader:
         Returns:
             str: Схема, полученная из файла.
         """
-        path_file = f'schemas/schema-{index}.json'
+        path_file = f"schemas/schema-{index}.json"
         with open(path_file, "r") as file:
             schema = file.read()
         return schema

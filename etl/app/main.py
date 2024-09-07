@@ -3,12 +3,11 @@ from abc import ABC, abstractmethod
 
 import psycopg
 from backoff import backoff
+from config import load_config
 from elasticsearch_class import ElasticSearchLoader
 from main_logger import MainLogger
 from psycopg.rows import dict_row
 from state import JsonStorage, State
-
-from config import load_config
 
 logger = MainLogger().get_logger("main")
 config = load_config()
@@ -210,9 +209,9 @@ class ExtractGenre(BaseExtractor):
 class Transform:
     def __init__(self):
         self.transformers = {
-            'movies': self.prepare_data_movies,
-            'genres': self.prepare_data_genres,
-            'persons': self.prepare_data_persons
+            "movies": self.prepare_data_movies,
+            "genres": self.prepare_data_genres,
+            "persons": self.prepare_data_persons,
         }
 
     def prepare_data_movies(self, data: list) -> dict:
@@ -240,11 +239,11 @@ class Transform:
                     current_movie[f"{role}_names"] = []
             genres = current_movie.setdefault("genres", [])
             for genre in genres:
-                if genre['id'] == str(row["g_id"]):
+                if genre["id"] == str(row["g_id"]):
                     found = True
                     break
             if not found:
-                genres.append({'id': str(row["g_id"]), 'name': str(row["name"])})
+                genres.append({"id": str(row["g_id"]), "name": str(row["name"])})
             role = row["role"]
             if role == "director":
                 directors_name = current_movie.setdefault("directors_names", [])
@@ -268,60 +267,59 @@ class Transform:
                         dict(id=str(row["id"]), name=str(row["full_name"]))
                     )
         return result
-    
+
     def prepare_data_persons(self, data: list):
         result = {}
         for row in data:
             found = False
-            current_person = result.setdefault(str(row['id']), {})
+            current_person = result.setdefault(str(row["id"]), {})
             if not current_person:
-                current_person['id'] = str(row['id'])
-                current_person['full_name'] = str(row['full_name'])
-            # movies = current_person.setdefault('movies_names', [])
-            movie_data = current_person.setdefault('movies', [])
+                current_person["id"] = str(row["id"])
+                current_person["full_name"] = str(row["full_name"])
+            movie_data = current_person.setdefault("films", [])
             for movie in movie_data:
-                if movie['id'] == str(row['id']):
-                    movie['roles'].append(row['role'])
-                    found = True
+                found = True
+                if (
+                    movie["id"] == str(row["fw_id"])
+                    and row["role"] not in movie["roles"]
+                ):
+                    movie["roles"].append(row["role"])
             if not found:
-                movie_data.append({'id': str(row['fw_id']), 'roles': [row['role']]})
+                movie_data.append({"id": str(row["fw_id"]), "roles": [row["role"]]})
         return result
-    
 
     def prepare_data_genres(self, data: list):
         result = {}
         for row in data:
             found = False
-            current_genre = result.setdefault(str(row['g_id']), {})
+            current_genre = result.setdefault(str(row["g_id"]), {})
             if not current_genre:
-                current_genre['id'] = str(row['g_id'])
-                current_genre['name'] = row['name']
-                current_genre['description'] = row['g_descr']
-            movies = current_genre.setdefault('movies',[])
+                current_genre["id"] = str(row["g_id"])
+                current_genre["name"] = row["name"]
+                current_genre["description"] = row["g_descr"]
+            movies = current_genre.setdefault("movies", [])
             for movie in movies:
-                if str(row['fw_id']) == movie['id']:
+                if str(row["fw_id"]) == movie["id"]:
                     found = True
                     break
             if not found:
-                movies.append({'id': str(row['fw_id']), 'title': row['title']})
+                movies.append({"id": str(row["fw_id"]), "title": row["title"]})
         return result
-
 
 
 class MovieIndex:
     def __init__(self, db, state, es_loader: ElasticSearchLoader):
-        self.index = 'movies'
-
+        self.index = "movies"
         es_loader.create_index(self.index)
-
 
 
 class PersonIndex:
     """SELECT id, full_name from "content"."persons"
-        WHERE modified > date
+    WHERE modified > date
 
 
     """
+
 
 class EtlProcess:
     def __init__(self):
@@ -329,16 +327,13 @@ class EtlProcess:
         self.db = Database(pg_data=dsn)
         self.transformer = Transform()
         self.es_loader = ElasticSearchLoader()
-        # self.es_loader_persons = ElasticSearchLoader('persons')
-        # self.es_loader_persons = ElasticSearchLoader('genres')
-
         self.extractor_person = ExtractPerson(db=self.db, state=self.state)
         self.extractor_genre = ExtractGenre(db=self.db, state=self.state)
         self.extractor_filmwork = ExtractFilmWork(db=self.db, state=self.state)
-        self.es_loader.create_index('movies')
-        self.es_loader.create_index('genres')
-        self.es_loader.create_index('persons')
-    
+        self.es_loader.create_index("movies")
+        self.es_loader.create_index("genres")
+        self.es_loader.create_index("persons")
+
         self.extractors = {
             "movies": self.extractor_filmwork,
             "persons": self.extractor_person,
@@ -356,7 +351,6 @@ class EtlProcess:
                     self.db.close_connection()
                     exit()
             logger.info("Итерация завершена!")
-
 
     def universal_process(self, table_name: str):
         """Функция принимает название таблицы и производит получение/трансформацию/вставку
@@ -388,16 +382,18 @@ class EtlProcess:
                     break
                 data = self.extractors[table_name].get_movies_data(movies_list)
                 prepared_data = self.transformer.transformers[table_name](data)
-                z = self.es_loader.bulk_insert_data(prepared_data, table_name)
-                if table_name != 'movies':
-                    prepared_data = self.transformer.transformers['movies'](data)
-                    self.es_loader.bulk_insert_data(prepared_data, 'movies')
+                self.es_loader.bulk_insert_data(prepared_data, table_name)
+                if table_name != "movies":
+                    prepared_data = self.transformer.transformers["movies"](data)
+                    self.es_loader.bulk_insert_data(prepared_data, "movies")
                 logger.info(f"Успешно загружено %s документов", len(movies_list))
                 self.state.save_storage("tmp_date", str(data[-1]["modified"]))
             self.state.save_storage(table_name, str(rows[-1]["modified"]))
             counter += len(rows)
             logger.info(
-                f"Всего успешно обработано %s записей из таблицы %s.", counter, table_name
+                f"Всего успешно обработано %s записей из таблицы %s.",
+                counter,
+                table_name,
             )
 
 
