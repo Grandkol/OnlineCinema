@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
-from models.film import Film
+from models.film import FilmList
 from models.person import Person
 from pydantic import BaseModel
 from services.person import PersonService, get_person_service
@@ -34,7 +34,7 @@ async def person_details(
     return Person(id=person.id, full_name=person.full_name, films=person.films)
 
 
-@router.get("/{person_id}/film", response_model=list[Film])
+@router.get("/{person_id}/film", response_model=list[FilmList])
 async def person_films(
     person_id: str, person_service: PersonService = Depends(get_person_service)
 ):

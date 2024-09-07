@@ -6,7 +6,6 @@ from db.redis import get_redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 from models.film import Film, FilmList
-from pydantic import BaseModel
 from redis.asyncio import Redis
 from services.cache import BaseCacheService
 

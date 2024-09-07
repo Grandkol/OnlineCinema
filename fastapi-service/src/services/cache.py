@@ -1,6 +1,5 @@
-import logging
-
 from pydantic import BaseModel
+
 
 MAX_CACHE_TIMEOUT = 60 * 5
 
