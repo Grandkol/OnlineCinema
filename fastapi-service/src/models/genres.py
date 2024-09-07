@@ -1,6 +1,6 @@
-from pydantic import BaseModel
-from typing import List, Union, Dict
+from typing import Dict, List, Union
 
+from pydantic import BaseModel
 
 
 class BaseGenre(BaseModel):
