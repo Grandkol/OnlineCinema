@@ -8,7 +8,7 @@ from services.film import FilmService, get_film_service
 router = APIRouter()
 
 
-@router.get("/search", response_model=list[FilmList], tags=["all_films"])
+@router.get("/search", response_model=list[FilmList])
 async def film_detail_list(
     film_service: FilmService = Depends(get_film_service),
     query: Annotated[
@@ -49,7 +49,7 @@ async def film_detail_list(
     return films
 
 
-@router.get("/{film_id}", response_model=Film, tags=["film_detail"])
+@router.get("/{film_id}", response_model=Film)
 async def film_details(
     film_id: Annotated[str, Path(description="The ID of the film to get")],
     film_service: FilmService = Depends(get_film_service),

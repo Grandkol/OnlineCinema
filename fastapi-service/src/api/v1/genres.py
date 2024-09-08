@@ -8,7 +8,7 @@ from services.genre import GenreService, get_genre_service
 router = APIRouter()
 
 
-@router.get("/", response_model=list[BaseGenre], tags=["genre_list"])
+@router.get("/", response_model=list[BaseGenre])
 async def all_genres(
     page_number: Annotated[int, Query(description="Page number", ge=1)] = 1,
     page_size: Annotated[
@@ -30,7 +30,7 @@ async def all_genres(
     return genres
 
 
-@router.get("/{genre_id}", response_model=Genre, tags=["genre_detail"])
+@router.get("/{genre_id}", response_model=Genre)
 async def genre_info(
     genre_id: Annotated[str, Path(description="The ID of the genre to get")],
     genre_service: GenreService = Depends(get_genre_service),

@@ -36,7 +36,7 @@ async def person_search(
     return persons
 
 
-@router.get("/{person_id}", response_model=Person, tags=["person_detail"])
+@router.get("/{person_id}", response_model=Person)
 async def person_details(
     person_id: Annotated[str, Path(description="The ID of the person to get")],
     person_service: PersonService = Depends(get_person_service),
@@ -55,9 +55,7 @@ async def person_details(
     return Person(id=person.id, full_name=person.full_name, films=person.films)
 
 
-@router.get(
-    "/{person_id}/film", response_model=list[FilmList], tags=["person_film_detail"]
-)
+@router.get("/{person_id}/film", response_model=list[FilmList])
 async def person_films(
     person_id: Annotated[str, Path(description="The ID of the person to get")],
     person_service: PersonService = Depends(get_person_service),
@@ -78,7 +76,7 @@ async def person_films(
     return films
 
 
-@router.get("/", response_model=list[Person], tags=["person_list"])
+@router.get("/", response_model=list[Person])
 async def all_persons(
     page_size: Annotated[
         int, Query(description="Amount of persons at single page", ge=1)
