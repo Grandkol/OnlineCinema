@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Union
 
 from pydantic import BaseModel
 
@@ -10,4 +10,4 @@ class BaseGenre(BaseModel):
 
 
 class Genre(BaseGenre):
-    movies: List[Dict[str, str]]
+    movies: list[dict[str, str]]

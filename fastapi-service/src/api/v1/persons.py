@@ -16,6 +16,14 @@ async def person_search(
     page_size: int = 50,
     person_service: PersonService = Depends(get_person_service),
 ):
+    """
+        Получите человка по его имени.
+
+        - **id**: id человека
+        - **full_name**: Полное Имя человека
+        - **films**: Фильмы, в съемках которых данный человек принимал участие, а также его роль
+
+    """
     persons = await person_service.search_person(query, page_number, page_size)
     if not persons:
         raise HTTPException(
@@ -24,20 +32,36 @@ async def person_search(
     return persons
 
 
-@router.get("/{person_id}", response_model=Person)
+@router.get("/{person_id}", response_model=Person, tags=["person_detail"])
 async def person_details(
     person_id: str, person_service: PersonService = Depends(get_person_service)
 ):
+    """
+        Получите всю информацию о человеке по его id
+
+        - **id**: id человека
+        - **full_name**: Полное Имя человека
+        - **films**: Фильмы, в съемках которых данный человек принимал участие, а также его роль
+
+    """
     person = await person_service.get_by_id(person_id=person_id)
     if not person:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Person not found")
     return Person(id=person.id, full_name=person.full_name, films=person.films)
 
 
-@router.get("/{person_id}/film", response_model=list[FilmList])
+@router.get("/{person_id}/film", response_model=list[FilmList], tags=["person_film_detail"])
 async def person_films(
     person_id: str, person_service: PersonService = Depends(get_person_service)
 ):
+    """
+        Получите список фильмов, в которых снимался этот человек
+
+        - **id**: id Кинопроизведения
+        - **title**: Название Кинопроизведения
+        - **imdb_rating**: Рейтинг Кинопроизведения на imdb
+
+    """
     films = await person_service.get_movie_by_person(person_id)
     if not films:
         raise HTTPException(
@@ -46,12 +70,20 @@ async def person_films(
     return films
 
 
-@router.get("/", response_model=list[Person])
+@router.get("/", response_model=list[Person], tags=["person_list"])
 async def all_persons(
     page_number: int = 1,
     page_size: int = 50,
     person_service: PersonService = Depends(get_person_service),
 ):
+    """
+        Получите всех людей в базе данных.
+
+        - **id**: id Жанра
+        - **full_name**: Полное Имя человека
+        - **films**: Фильмы, в съемках которых данный человек принимал участие, а также его роль
+
+    """
     persons = await person_service.get_all(
         page_size=int(page_size), page_number=int(page_number)
     )
