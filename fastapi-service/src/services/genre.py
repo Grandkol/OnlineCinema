@@ -12,7 +12,9 @@ from services.base import BaseService
 class GenreService(BaseService):
     index = "genres"
 
-    async def _get_all_from_elastic(self, page_size: int, page_number: int):
+    async def _get_all_from_elastic(
+        self, page_size: int, page_number: int
+    ) -> list[BaseGenre]:
         genres = await super()._get_all_from_elastic(
             page_number=page_number, page_size=page_size
         )

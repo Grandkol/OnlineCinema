@@ -16,7 +16,7 @@ PERSON_MAX_CACHE_TIMEOUT = 5
 class PersonService(BaseService):
     index = "persons"
 
-    async def get_movie_by_person(self, person_id: str):
+    async def get_movie_by_person(self, person_id: str) -> FilmList:
         key = f"{self.index}:{person_id}:film"
         result_data = await self._get_from_cache(key, FilmList, many=True)
         if not result_data:
@@ -39,7 +39,9 @@ class PersonService(BaseService):
             await self._put_to_cache(key, result_data)
         return result_data
 
-    async def search_person(self, query: str, page_number: int, page_size: int):
+    async def search_person(
+        self, query: str, page_number: int, page_size: int
+    ) -> list[Person] | None:
         key = f"{self.index}:{query}:{page_size}:{page_number}"
         if not query:
             query = ""
@@ -62,7 +64,9 @@ class PersonService(BaseService):
             await self._put_to_cache(key, persons)
         return persons
 
-    async def _search_from_elastic(self, size: int, from_: int, query: dict):
+    async def _search_from_elastic(
+        self, size: int, from_: int, query: dict
+    ) -> list[Person]:
         persons = await self.elastic.search(
             index="persons", query=query, from_=int(from_), size=int(size)
         )

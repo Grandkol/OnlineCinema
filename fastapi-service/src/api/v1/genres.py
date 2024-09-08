@@ -8,7 +8,7 @@ from services.genre import GenreService, get_genre_service
 router = APIRouter()
 
 
-@router.get("/", response_model=list[BaseGenre])
+@router.get("/", response_model=list[BaseGenre], tags=["genre_list"])
 async def all_genres(
     page_number: Annotated[int, Query(description="Page number", ge=1)] = 1,
     page_size: Annotated[
@@ -16,17 +16,33 @@ async def all_genres(
     ] = 50,
     genre_service: GenreService = Depends(get_genre_service),
 ):
+    """
+    Получите все жанры:
+
+    - **id**: id Жанра
+    - **name**: Название Жанра
+    - **description**: Описание жанра
+
+    """
     genres = await genre_service.get_all(page_size=page_size, page_number=page_number)
     if not genres:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Genres not found")
     return genres
 
 
-@router.get("/{genre_id}", response_model=Genre)
+@router.get("/{genre_id}", response_model=Genre, tags=["genre_detail"])
 async def genre_info(
     genre_id: Annotated[str, Path(description="The ID of the genre to get")],
     genre_service: GenreService = Depends(get_genre_service),
 ):
+    """
+    Получите Детальную информацию о конкретном жанре:
+
+    - **id**: id Жанра
+    - **name**: Название Жанра
+    - **description**: Описание жанра
+    - **movies**: Название и id всех фильмов в этом жанре
+    """
     genre = await genre_service.get_by_id(genre_id)
     if not genre:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Genre not found")

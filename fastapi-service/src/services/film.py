@@ -1,5 +1,4 @@
 from functools import lru_cache
-from typing import List, Optional
 
 from db.elastic import get_elastic
 from db.redis import get_redis
@@ -15,7 +14,7 @@ class FilmService(BaseService):
 
     async def get_film_list(
         self, sort, genre, page_size, page_number, query
-    ) -> Optional[List[Film]]:
+    ) -> list[Film] | None:
         key = f"{self.index}:{query}:{page_size}:{page_number}"
         films = await self._get_from_cache(key, FilmList, many=True)
         if not films:
@@ -33,7 +32,7 @@ class FilmService(BaseService):
 
     async def _get_list_from_elastic(
         self, sort, genre, page_size, page_number, query
-    ) -> Optional[List[Film]]:
+    ) -> list[Film] | None:
         try:
             body_query = {}
             if page_size:
@@ -73,7 +72,7 @@ class FilmService(BaseService):
 
         return [FilmList(**document["_source"]) for document in documents]
 
-    async def _get_film_from_elastic(self, film_id: str) -> Optional[Film]:
+    async def _get_film_from_elastic(self, film_id: str) -> Film | None:
         try:
             doc = await self.elastic.get(index="movies", id=film_id)
         except NotFoundError:

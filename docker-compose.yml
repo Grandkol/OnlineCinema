@@ -33,8 +33,6 @@ services:
     restart: always
     ports:
       - 6379:6379
-    volumes:
-      - redis:/data
 
   elasticsearch:
     container_name: elastic
@@ -42,8 +40,8 @@ services:
     restart: always
     ports:
       - 9200:9200
-    # volumes:
-    #   - elastic:/usr/share/elasticsearch/data
+   volumes:
+     - elastic:/usr/share/elasticsearch/data
     environment:
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - discovery.type=single-node
