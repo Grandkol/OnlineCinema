@@ -1,20 +1,19 @@
 from http import HTTPStatus
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
-from models.film import Film
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from models.genres import BaseGenre, Genre
-from models.person import Person
-from pydantic import BaseModel
 from services.genre import GenreService, get_genre_service
-from services.person import PersonService, get_person_service
 
 router = APIRouter()
 
 
 @router.get("/", response_model=list[BaseGenre])
 async def all_genres(
-    page_number: int = 1,
-    page_size: int = 50,
+    page_number: Annotated[int, Query(description="Page number", ge=1)] = 1,
+    page_size: Annotated[
+        int, Query(description="Amount of genres at single page", ge=1)
+    ] = 50,
     genre_service: GenreService = Depends(get_genre_service),
 ):
     genres = await genre_service.get_all(page_size=page_size, page_number=page_number)
@@ -25,7 +24,8 @@ async def all_genres(
 
 @router.get("/{genre_id}", response_model=Genre)
 async def genre_info(
-    genre_id: str, genre_service: GenreService = Depends(get_genre_service)
+    genre_id: Annotated[str, Path(description="The ID of the genre to get")],
+    genre_service: GenreService = Depends(get_genre_service),
 ):
     genre = await genre_service.get_by_id(genre_id)
     if not genre:

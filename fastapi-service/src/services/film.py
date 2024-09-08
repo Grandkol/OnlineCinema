@@ -7,25 +7,11 @@ from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 from models.film import Film, FilmList
 from redis.asyncio import Redis
-from services.cache import BaseCacheService
+from services.base import BaseService
 
 
-class FilmService(BaseCacheService):
-    index = "film"
-
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
-        self.redis = redis
-        self.elastic = elastic
-
-    async def get_by_id(self, film_id: str) -> Optional[Film]:
-        key = f"{self.index}:{film_id}"
-        film = await self._get_from_cache(key, Film)
-        if not film:
-            film = await self._get_film_from_elastic(film_id)
-            if not film:
-                return None
-            await self._put_to_cache(key, film)
-        return film
+class FilmService(BaseService):
+    index = "movies"
 
     async def get_film_list(
         self, sort, genre, page_size, page_number, query

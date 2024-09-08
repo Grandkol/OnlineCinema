@@ -10,4 +10,4 @@ class BaseGenre(BaseModel):
 
 
 class Genre(BaseGenre):
-    movies: List[Dict[str, str]]
+    movies: List[Dict[str, str]] | None = None

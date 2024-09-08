@@ -2,33 +2,19 @@ from functools import lru_cache
 
 from db.elastic import get_elastic
 from db.redis import get_redis
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 from models.film import FilmList
 from models.person import Person
 from redis.asyncio import Redis
 from services import film
-from services.cache import BaseCacheService
+from services.base import BaseService
 
 PERSON_MAX_CACHE_TIMEOUT = 5
 
 
-class PersonService(BaseCacheService):
+class PersonService(BaseService):
     index = "persons"
-
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
-        self.redis = redis
-        self.elastic = elastic
-
-    async def get_by_id(self, person_id: str):
-        key = f"{self.index}:{person_id}"
-        person = await self._get_from_cache(key, Person)
-        if not person:
-            person = await self._get_from_elastic(person_id)
-            if not person:
-                return None
-            await self._put_to_cache(key, person)
-        return person
 
     async def get_movie_by_person(self, person_id: str):
         key = f"{self.index}:{person_id}:film"
@@ -55,6 +41,8 @@ class PersonService(BaseCacheService):
 
     async def search_person(self, query: str, page_number: int, page_size: int):
         key = f"{self.index}:{query}:{page_size}:{page_number}"
+        if not query:
+            query = ""
         persons = await self._get_from_cache(key, Person, many=True)
         if not persons:
             statement = {
@@ -77,33 +65,6 @@ class PersonService(BaseCacheService):
     async def _search_from_elastic(self, size: int, from_: int, query: dict):
         persons = await self.elastic.search(
             index="persons", query=query, from_=int(from_), size=int(size)
-        )
-        persons = persons["hits"]["hits"]
-        return [Person(**person["_source"]) for person in persons]
-
-    async def _get_from_elastic(self, person_id: str):
-        try:
-            person = await self.elastic.get(index="persons", id=person_id)
-        except NotFoundError:
-            return None
-        data = person["_source"]
-        return Person(**data)
-
-    async def get_all(self, page_size: int, page_number: int):
-        key = f"{self.index}:{page_size}:{page_number}:all"
-        persons = await self._get_from_cache(key, Person, many=True)
-        if not persons:
-            persons = await self._get_all_from_elastic(page_size, page_number)
-            if not persons:
-                return None
-            await self._put_to_cache(key, persons)
-        return persons
-
-    async def _get_all_from_elastic(self, page_size: int, page_number: int):
-        doc = {"match_all": {}}
-        page_number = (page_number - 1) * page_size
-        persons = await self.elastic.search(
-            index="persons", query=doc, from_=page_number, size=page_size
         )
         persons = persons["hits"]["hits"]
         return [Person(**person["_source"]) for person in persons]
