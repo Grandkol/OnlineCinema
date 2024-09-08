@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Annotated, List
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from models.film import Film, FilmList
@@ -8,7 +8,7 @@ from services.film import FilmService, get_film_service
 router = APIRouter()
 
 
-@router.get("/search", response_model=List[FilmList], tags=["all_films"])
+@router.get("/search", response_model=list[FilmList], tags=["all_films"])
 async def film_detail_list(
     film_service: FilmService = Depends(get_film_service),
     query: Annotated[
@@ -22,7 +22,7 @@ async def film_detail_list(
     genre: Annotated[
         str, Query(description="Genre where search movies", max_length=20)
     ] = None,
-) -> List[Film]:
+) -> list[Film]:
     """
     Получите список всех фильмов кинотеатра:
 
