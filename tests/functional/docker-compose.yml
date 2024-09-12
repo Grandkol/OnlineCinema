@@ -3,6 +3,11 @@ services:
   fastapi:
     build: ./fastapi-service
     image: fastapi-image
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - 8000:8000
 
   tests:
       image: fastapi-image
