@@ -9,7 +9,7 @@ class TestSettings(BaseSettings):
     # es_index_mapping: dict = Field("mapping", env="ELASTIC_MAPPING")
 
     redis_host: str = Field("127.0.0.1", alias="REDIS_HOST")
-    service_url: str = Field("http://fastapi:8000", alias="SERVICE_URL")
+    service_url: str = Field("http://fastapi:8000/api/v1/", alias="SERVICE_URL")
 
 
 test_settings = TestSettings()

@@ -2,141 +2,11 @@ from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk
 import pytest_asyncio
 import asyncio
+import aiohttp
 
 import pytest
 from functional.settings import test_settings
-
-MAPPING_MOVIES = {
-    "settings": {
-      "refresh_interval": "1s",
-      "analysis": {
-        "filter": {
-          "english_stop": {
-            "type":       "stop",
-            "stopwords":  "_english_"
-          },
-          "english_stemmer": {
-            "type": "stemmer",
-            "language": "english"
-          },
-          "english_possessive_stemmer": {
-            "type": "stemmer",
-            "language": "possessive_english"
-          },
-          "russian_stop": {
-            "type":       "stop",
-            "stopwords":  "_russian_"
-          },
-          "russian_stemmer": {
-            "type": "stemmer",
-            "language": "russian"
-          }
-        },
-        "analyzer": {
-          "ru_en": {
-            "tokenizer": "standard",
-            "filter": [
-              "lowercase",
-              "english_stop",
-              "english_stemmer",
-              "english_possessive_stemmer",
-              "russian_stop",
-              "russian_stemmer"
-            ]
-          }
-        }
-      }
-    },
-    "mappings": {
-      "dynamic": "strict",
-      "properties": {
-        "id": {
-          "type": "keyword"
-        },
-        "imdb_rating": {
-          "type": "float"
-        },
-        "genres": {
-          "type": "nested",
-          "dynamic": "strict",
-          "properties": {
-            "id": {
-              "type": "keyword"
-            },
-            "name": {
-              "type": "text",
-              "analyzer": "ru_en"
-            }
-          }
-
-        },
-        "title": {
-          "type": "text",
-          "analyzer": "ru_en",
-          "fields": {
-            "raw": {
-              "type":  "keyword"
-            }
-          }
-        },
-        "description": {
-          "type": "text",
-          "analyzer": "ru_en"
-        },
-        "directors_names": {
-          "type": "text",
-          "analyzer": "ru_en"
-        },
-        "actors_names": {
-          "type": "text",
-          "analyzer": "ru_en"
-        },
-        "writers_names": {
-          "type": "text",
-          "analyzer": "ru_en"
-        },
-        "directors": {
-          "type": "nested",
-          "dynamic": "strict",
-          "properties": {
-            "id": {
-              "type": "keyword"
-            },
-            "name": {
-              "type": "text",
-              "analyzer": "ru_en"
-            }
-          }
-        },
-        "actors": {
-          "type": "nested",
-          "dynamic": "strict",
-          "properties": {
-            "id": {
-              "type": "keyword"
-            },
-            "name": {
-              "type": "text",
-              "analyzer": "ru_en"
-            }
-          }
-        },
-        "writers": {
-          "type": "nested",
-          "dynamic": "strict",
-          "properties": {
-            "id": {
-              "type": "keyword"
-            },
-            "name": {
-              "type": "text",
-              "analyzer": "ru_en"
-            }
-          }
-        }
-      }
-    }
-  }
+from functional.testdata.es_mapping import MAPPING_MOVIES
 
 
 @pytest_asyncio.fixture(scope='session')
@@ -153,15 +23,37 @@ async def es_client():
     await es_client.close()
 
 
+@pytest_asyncio.fixture(name='client_session', scope='session')
+async def client_session():
+    session = aiohttp.ClientSession()
+    yield session
+    await session.close()
+
+
 @pytest_asyncio.fixture(name='es_write_data')
 def es_write_data(es_client: AsyncElasticsearch):
     async def inner(data: list[dict]):
         if await es_client.indices.exists(index=test_settings.es_index):
             await es_client.indices.delete(index=test_settings.es_index)
         await es_client.indices.create(index=test_settings.es_index, **MAPPING_MOVIES)
+        print(data)
 
         updated, errors = await async_bulk(client=es_client, actions=data)
 
         if errors:
             raise Exception('Ошибка записи данных в Elasticsearch')
+    return inner
+
+
+@pytest_asyncio.fixture(name='make_get_request')
+def make_get_request(client_session):
+    async def inner(endpoint, query_data: list[dict]):
+        url = test_settings.service_url + endpoint
+        print(url)
+        async with client_session.get(url, params=query_data) as response:
+            body = await response.json()
+            print(body)
+            status = response.status
+        return body, status
+
     return inner
