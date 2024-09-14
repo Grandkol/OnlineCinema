@@ -1,23 +1,16 @@
 from functools import lru_cache
 
-from base import BaseElasticService, BaseService
-from cache import CacheRedis
+from db.elastic import get_elastic
+from db.redis import get_redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 from redis.asyncio import Redis
-from storage import StorageBaseElastic
-
-from db.elastic import get_elastic
-from db.redis import get_redis
-from models.genres import BaseGenre
+from services.base import BaseElasticService, BaseService
+from services.cache import CacheRedis
+from services.storage import StorageBaseElastic
 
 
-class BaseGenreService(BaseService):
-    async def get_all(self, page_size: int, page_number: int, *args, **kwargs):
-        super().get_all(page_size, page_number, model=BaseGenre)
-
-
-class ElasticServiceGenre(BaseGenreService, BaseElasticService):
+class ElasticServiceGenre(BaseElasticService, BaseService):
     index = "genres"
 
 

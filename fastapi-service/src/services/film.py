@@ -1,19 +1,20 @@
 from functools import lru_cache
 
-from base import AbstractFilmService, BaseElasticService, BaseService
-from cache import CacheRedis
-from elasticsearch import AsyncElasticsearch
-from fastapi import Depends
-from redis.asyncio import Redis
-from storage import StorageFilmElastic
-
 from db.elastic import get_elastic
 from db.redis import get_redis
+from elasticsearch import AsyncElasticsearch
+from fastapi import Depends
 from models.film import Film, FilmList
-from services.base import BaseService
+from redis.asyncio import Redis
+from services.base import AbstractFilmService, BaseElasticService, BaseService
+from services.cache import CacheRedis
+from services.storage import AbstractStorageFilm, StorageFilmElastic
 
 
 class BaseFilmService(BaseService, AbstractFilmService):
+    def __init__(self, cache: CacheRedis, storage: AbstractStorageFilm):
+        super().__init__(cache, storage)
+        self.storage = storage
 
     async def get_film_list(
         self, sort: str, genre: str, page_size: int, page_number: int, query: str
@@ -34,12 +35,11 @@ class BaseFilmService(BaseService, AbstractFilmService):
         return films
 
 
-class ElasticServiceFilm(BaseFilmService, BaseElasticService):
+class ElasticServiceFilm(
+    BaseElasticService,
+    BaseFilmService,
+):
     index = "movies"
-
-    def __init__(self, cache: CacheRedis, storage: StorageFilmElastic):
-        super().__init__(cache, storage)
-        self.storage = storage
 
 
 @lru_cache()
@@ -47,4 +47,4 @@ def get_film_service(
     redis: Redis = Depends(get_redis),
     elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> ElasticServiceFilm:
-    return ElasticServiceFilm(redis, elastic)
+    return ElasticServiceFilm(CacheRedis(redis), StorageFilmElastic(elastic))

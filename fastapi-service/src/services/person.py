@@ -1,16 +1,15 @@
 from functools import lru_cache
 
-from base import AbstractPersonService, BaseElasticService, BaseService
-from cache import CacheRedis
-from elasticsearch import AsyncElasticsearch
-from fastapi import Depends
-from redis.asyncio import Redis
-from storage import StoragePersonElastic
-
 from db.elastic import get_elastic
 from db.redis import get_redis
+from elasticsearch import AsyncElasticsearch
+from fastapi import Depends
 from models.film import Film, FilmList
 from models.person import Person
+from redis.asyncio import Redis
+from services.base import AbstractPersonService, BaseElasticService, BaseService
+from services.cache import CacheRedis
+from services.storage import StoragePersonElastic
 
 PERSON_MAX_CACHE_TIMEOUT = 5
 
@@ -56,7 +55,7 @@ class BasePersonService(BaseService, AbstractPersonService):
             }
             from_ = (page_number - 1) * page_size
             persons = await self.storage._search_from_storage(
-                size=page_size, from_=from_, query=statement
+                size=page_size, from_=from_, query=statement, model=Person
             )
             if not persons:
                 return None
@@ -65,8 +64,8 @@ class BasePersonService(BaseService, AbstractPersonService):
 
 
 class ElasticServicePerson(
-    BasePersonService,
     BaseElasticService,
+    BasePersonService,
 ):
     index = "persons"
 

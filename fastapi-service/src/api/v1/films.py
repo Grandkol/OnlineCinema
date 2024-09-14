@@ -2,7 +2,6 @@ from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
-
 from models.film import Film, FilmList
 from services.film import ElasticServiceFilm, get_film_service
 

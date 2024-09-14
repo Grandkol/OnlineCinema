@@ -2,7 +2,6 @@ from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
-
 from models.film import FilmList
 from models.person import Person
 from services.person import BasePersonService, get_person_service

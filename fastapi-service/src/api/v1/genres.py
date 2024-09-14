@@ -2,14 +2,13 @@ from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
-
 from models.genres import BaseGenre, Genre
 from services.genre import ElasticServiceGenre, get_genre_service
 
 router = APIRouter()
 
 
-@router.get("/", response_model=list[BaseGenre])
+@router.get("/", response_model=list[BaseGenre], response_model_exclude_none=True)
 async def all_genres(
     page_number: Annotated[int, Query(description="Page number", ge=1)] = 1,
     page_size: Annotated[

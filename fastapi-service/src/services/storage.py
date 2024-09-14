@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
 
 from elasticsearch import AsyncElasticsearch, NotFoundError
-from pydantic import BaseModel
-
 from models.film import FilmList
+from pydantic import BaseModel
 
 
 class StorageAbstract(ABC):
@@ -52,7 +51,9 @@ class StorageBaseElastic(StorageAbstract):
                 "Для работы с Elasticsearch нужно передать index в вызове функции."
             )
         try:
+            print(item_id, index, model)
             doc = await self.elastic.get(index=index, id=item_id)
+            print(doc)
         except NotFoundError:
             return None
         return model(**doc["_source"])

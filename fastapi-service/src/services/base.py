@@ -1,15 +1,16 @@
 from abc import ABC, abstractmethod
 
-from cache import CacheAbstract
-from pydantic import BaseModel
-from storage import StorageAbstract
-
 from models.film import Film
 from models.genres import Genre
 from models.person import Person
+from pydantic import BaseModel
+from services.cache import CacheAbstract
+from services.storage import StorageAbstract
 
 
 class AbstractService(ABC):
+    index: str
+    model: BaseModel | None = None
 
     def __init__(self, cache: CacheAbstract, storage: StorageAbstract):
         self.storage = storage
@@ -52,7 +53,11 @@ class BaseService(AbstractService):
 
     async def get_by_id(self, item_id: str, *args, **kwargs) -> BaseModel | None:
         key = f"{self.index}:{item_id}"
-        model = kwargs.get("model", None) or self.models[self.index]
+        model = kwargs.get("model", None)
+        if model:
+            kwargs.pop("model")
+        else:
+            model = self.models[self.index]
         item = await self.cache._get_from_cache_single(key, model)
         if not item:
             item = await self.storage._get_item_from_storage(
@@ -65,7 +70,11 @@ class BaseService(AbstractService):
 
     async def get_all(self, page_size: int, page_number: int, *args, **kwargs):
         key = f"{self.index}:{page_size}:{page_number}:all"
-        model = kwargs.get("model", None) or self.models[self.index]
+        model = kwargs.get("model", None)
+        if model:
+            kwargs.pop("model")
+        else:
+            model = self.models[self.index]
         items = await self.cache._get_from_cache_many(key, model)
         if not items:
             items = await self.storage._get_all_from_storage(
@@ -77,12 +86,20 @@ class BaseService(AbstractService):
         return items
 
 
-class BaseElasticService(BaseService):
+class BaseElasticService(AbstractService):
 
     async def get_by_id(self, item_id: str, *args, **kwargs) -> BaseModel | None:
-        index = kwargs.get("index", None) or self.index
-        super().get_by_id(item_id, index=index, **kwargs)
+        index = kwargs.get("index", None)
+        if index:
+            kwargs.pop("index")
+        else:
+            index = self.index
+        return await super().get_by_id(item_id, index=index, **kwargs)
 
     async def get_all(self, page_size: int, page_number: int, *args, **kwargs):
-        index = kwargs.get("index", None) or self.index
-        super().get_all(page_size, page_number, index=index, **kwargs)
+        index = kwargs.get("index", None)
+        if index:
+            kwargs.pop("index")
+        else:
+            index = self.index
+        return await super().get_all(page_size, page_number, index=index, **kwargs)
