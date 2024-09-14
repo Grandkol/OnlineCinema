@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from models.genres import BaseGenre, Genre
-from services.genre import GenreService, get_genre_service
+from services.genre import ElasticServiceGenre, get_genre_service
 
 router = APIRouter()
 
@@ -14,7 +14,7 @@ async def all_genres(
     page_size: Annotated[
         int, Query(description="Amount of genres at single page", ge=1)
     ] = 50,
-    genre_service: GenreService = Depends(get_genre_service),
+    genre_service: ElasticServiceGenre = Depends(get_genre_service),
 ):
     """
     Получите все жанры:
@@ -33,7 +33,7 @@ async def all_genres(
 @router.get("/{genre_id}", response_model=Genre)
 async def genre_info(
     genre_id: Annotated[str, Path(description="The ID of the genre to get")],
-    genre_service: GenreService = Depends(get_genre_service),
+    genre_service: ElasticServiceGenre = Depends(get_genre_service),
 ):
     """
     Получите Детальную информацию о конкретном жанре:

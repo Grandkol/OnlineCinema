@@ -6,31 +6,25 @@ from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 from models.genres import BaseGenre
 from redis.asyncio import Redis
-from services.base import BaseService
+from cache import CacheRedis
+from storage import StorageGenreElastic
+from base import BaseService, BaseElasticService
 
 
-class GenreService(BaseService):
+class BaseGenreService(BaseService):
+    async def get_all(self, page_size: int, page_number: int, *args, **kwargs):
+        super().get_all(page_size, page_number, model=BaseGenre)
+
+
+class ElasticServiceGenre(BaseGenreService, BaseElasticService):
     index = "genres"
-
-    async def _get_all_from_elastic(
-        self, page_size: int, page_number: int
-    ) -> list[BaseGenre]:
-        genres = await super()._get_all_from_elastic(
-            page_number=page_number, page_size=page_size
-        )
-        return [
-            BaseGenre(
-                id=genre.id,
-                name=genre.name,
-                description=genre.description,
-            )
-            for genre in genres
-        ]
 
 
 @lru_cache
 def get_genre_service(
     redis: Redis = Depends(get_redis),
     elastic: AsyncElasticsearch = Depends(get_elastic),
-) -> GenreService:
-    return GenreService(redis=redis, elastic=elastic)
+) -> ElasticServiceGenre:
+    return ElasticServiceGenre(
+        cache=CacheRedis(redis), storage=StorageGenreElastic(elastic)
+    )

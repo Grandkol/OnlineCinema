@@ -4,29 +4,34 @@ from db.elastic import get_elastic
 from db.redis import get_redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
-from models.film import FilmList
+from models.film import FilmList, Film
 from models.person import Person
 from redis.asyncio import Redis
 from services import film
-from services.base import BaseService
+from services.base import ElasticService
+
+from storage import StoragePersonElastic, AbstractStoragePerson
+from cache import CacheRedis
+
+from base import BaseService, AbstractPersonService, BaseElasticService
 
 PERSON_MAX_CACHE_TIMEOUT = 5
 
 
-class PersonService(BaseService):
-    index = "persons"
+class BasePersonService(BaseService, AbstractPersonService):
+    def __init__(self, cache: CacheRedis, storage: StoragePersonElastic):
+        super().__init__(cache, storage)
+        self.storage = storage
 
     async def get_movie_by_person(self, person_id: str) -> FilmList:
         key = f"{self.index}:{person_id}:film"
-        result_data = await self._get_from_cache(key, FilmList, many=True)
+        result_data = await self.cache._get_from_cache_many(key, FilmList)
         if not result_data:
             person_data = await self.get_by_id(person_id)
             result_data = []
             for movie in person_data.films:
                 movie_id = movie["id"]
-                movie_data = await film.get_film_service(
-                    self.redis, self.elastic
-                ).get_by_id(movie_id)
+                movie_data = await self.get_by_id(movie_id, index="movies", model=Film)
                 result_data.append(
                     FilmList(
                         id=movie_data.id,
@@ -36,7 +41,7 @@ class PersonService(BaseService):
                 )
             if not result_data:
                 return None
-            await self._put_to_cache(key, result_data)
+            await self.cache._put_to_cache_many(key, result_data)
         return result_data
 
     async def search_person(
@@ -45,7 +50,7 @@ class PersonService(BaseService):
         key = f"{self.index}:{query}:{page_size}:{page_number}"
         if not query:
             query = ""
-        persons = await self._get_from_cache(key, Person, many=True)
+        persons = await self.cache._get_from_cache_many(key, Person)
         if not persons:
             statement = {
                 "match": {
@@ -56,27 +61,27 @@ class PersonService(BaseService):
                 }
             }
             from_ = (page_number - 1) * page_size
-            persons = await self._search_from_elastic(
+            persons = await self.storage._search_from_storage(
                 size=page_size, from_=from_, query=statement
             )
             if not persons:
                 return None
-            await self._put_to_cache(key, persons)
+            await self.cache._put_to_cache_many(key, persons)
         return persons
 
-    async def _search_from_elastic(
-        self, size: int, from_: int, query: dict
-    ) -> list[Person]:
-        persons = await self.elastic.search(
-            index="persons", query=query, from_=int(from_), size=int(size)
-        )
-        persons = persons["hits"]["hits"]
-        return [Person(**person["_source"]) for person in persons]
+
+class ElasticServicePerson(
+    BasePersonService,
+    BaseElasticService,
+):
+    index = "persons"
 
 
 @lru_cache
 def get_person_service(
     redis: Redis = Depends(get_redis),
     elastic: AsyncElasticsearch = Depends(get_elastic),
-) -> PersonService:
-    return PersonService(redis=redis, elastic=elastic)
+) -> ElasticServicePerson:
+    return ElasticServicePerson(
+        cache=CacheRedis(redis), storage=StoragePersonElastic(elastic)
+    )
