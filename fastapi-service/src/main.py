@@ -1,13 +1,14 @@
 from contextlib import asynccontextmanager
 
-from api.v1 import films, genres, persons
-from core import config
-from db import elastic, redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from redis.asyncio import Redis
+
+from api.v1 import films, genres, persons
+from core import config
 from core.config import settings
+from db import elastic, redis
 
 
 @asynccontextmanager

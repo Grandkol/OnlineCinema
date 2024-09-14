@@ -2,15 +2,16 @@ from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
+
 from models.film import Film, FilmList
-from services.film import FilmService, get_film_service
+from services.film import ElasticServiceFilm, get_film_service
 
 router = APIRouter()
 
 
 @router.get("/search", response_model=list[FilmList])
 async def film_detail_list(
-    film_service: FilmService = Depends(get_film_service),
+    film_service: ElasticServiceFilm = Depends(get_film_service),
     query: Annotated[
         str | None, Query(description="Query to find films", max_length=255)
     ] = None,
@@ -52,7 +53,7 @@ async def film_detail_list(
 @router.get("/{film_id}", response_model=Film)
 async def film_details(
     film_id: Annotated[str, Path(description="The ID of the film to get")],
-    film_service: FilmService = Depends(get_film_service),
+    film_service: ElasticServiceFilm = Depends(get_film_service),
 ) -> Film:
     """
     Получите детальное описание конкретного Кинофильма:

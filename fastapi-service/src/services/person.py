@@ -1,27 +1,21 @@
 from functools import lru_cache
 
-from db.elastic import get_elastic
-from db.redis import get_redis
+from base import AbstractPersonService, BaseElasticService, BaseService
+from cache import CacheRedis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
-from models.film import FilmList, Film
-from models.person import Person
 from redis.asyncio import Redis
-from services import film
-from services.base import ElasticService
+from storage import StoragePersonElastic
 
-from storage import StoragePersonElastic, AbstractStoragePerson
-from cache import CacheRedis
-
-from base import BaseService, AbstractPersonService, BaseElasticService
+from db.elastic import get_elastic
+from db.redis import get_redis
+from models.film import Film, FilmList
+from models.person import Person
 
 PERSON_MAX_CACHE_TIMEOUT = 5
 
 
 class BasePersonService(BaseService, AbstractPersonService):
-    def __init__(self, cache: CacheRedis, storage: StoragePersonElastic):
-        super().__init__(cache, storage)
-        self.storage = storage
 
     async def get_movie_by_person(self, person_id: str) -> FilmList:
         key = f"{self.index}:{person_id}:film"
@@ -75,6 +69,10 @@ class ElasticServicePerson(
     BaseElasticService,
 ):
     index = "persons"
+
+    def __init__(self, cache: CacheRedis, storage: StoragePersonElastic):
+        super().__init__(cache, storage)
+        self.storage = storage
 
 
 @lru_cache

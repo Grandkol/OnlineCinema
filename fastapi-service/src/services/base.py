@@ -1,14 +1,12 @@
 from abc import ABC, abstractmethod
 
+from cache import CacheAbstract
+from pydantic import BaseModel
+from storage import StorageAbstract
 
-from models.film import Film, FilmList
+from models.film import Film
 from models.genres import Genre
 from models.person import Person
-from pydantic import BaseModel
-from redis.asyncio import Redis
-
-from cache import CacheAbstract
-from storage import StorageAbstract
 
 
 class AbstractService(ABC):
@@ -36,6 +34,15 @@ class AbstractPersonService(ABC):
     async def search_person(
         self, query: str, page_number: int, page_size: int
     ) -> list[BaseModel] | None:
+        pass
+
+
+class AbstractFilmService(ABC):
+
+    @abstractmethod
+    async def get_film_list(
+        self, sort, genre, page_size, page_number, query
+    ) -> list[Film] | None:
         pass
 
 

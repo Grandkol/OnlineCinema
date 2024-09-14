@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
-from pydantic import BaseModel
+
 from elasticsearch import AsyncElasticsearch, NotFoundError
+from pydantic import BaseModel
+
+from models.film import FilmList
 
 
 class StorageAbstract(ABC):
@@ -24,6 +27,15 @@ class AbstractStoragePerson(ABC):
     async def _search_from_storage(
         self, size: int, from_: int, query: dict, model: BaseModel, **kwargs
     ) -> list[BaseModel]:
+        pass
+
+
+class AbstractStorageFilm(ABC):
+
+    @abstractmethod
+    async def _get_list_from_storage(
+        self, sort: str, genre: str, page_size: int, page_number: int, query: str
+    ) -> list[BaseModel] | None:
         pass
 
 
@@ -75,5 +87,48 @@ class StoragePersonElastic(StorageBaseElastic, AbstractStoragePerson):
         return [model(**person["_source"]) for person in persons]
 
 
-class StorageFilmElastic(StorageBaseElastic):
-    pass
+class StorageFilmElastic(StorageBaseElastic, AbstractStorageFilm):
+
+    async def _get_list_from_storage(
+        self,
+        sort: str,
+        genre: str,
+        page_size: int,
+        page_number: int,
+        query: str,
+        model: BaseModel = FilmList,
+    ) -> list[BaseModel] | None:
+        try:
+            body_query = {}
+            if page_size:
+                body_query["size"] = page_size
+            if page_number:
+                body_query["from"] = (page_number - 1) * page_size
+            if sort == "-imdb_rating":
+                body_query["sort"] = {"imdb_rating": "desc"}
+            if query:
+                body_query["query"] = {
+                    "multi_match": {
+                        "query": query,
+                        "fields": ["*"],
+                        "fuzziness": "AUTO",
+                    }
+                }
+            if genre:
+                body_query["sort"] = {
+                    "genres.id": {
+                        "mode": "max",
+                        "order": "asc",
+                        "nested": {
+                            "path": "genres",
+                            "filter": {
+                                "bool": {"must": [{"match": {"genres.id": genre}}]}
+                            },
+                        },
+                    }
+                }
+            doc = await self.elastic.search(index="movies", body=body_query)
+            documents = doc["hits"]["hits"]
+        except NotFoundError:
+            return None
+        return [model(**document["_source"]) for document in documents]

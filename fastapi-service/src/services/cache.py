@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from redis.asyncio import Redis
+
 from pydantic import BaseModel
+from redis.asyncio import Redis
 
 MAX_CACHE_TIMEOUT = 60 * 5
 
