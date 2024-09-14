@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from models.film import FilmList
 from models.person import Person
-from services.person import PersonService, get_person_service
+from services.person import BasePersonService, get_person_service
 
 router = APIRouter()
 
@@ -18,7 +18,7 @@ async def person_search(
         int, Query(description="Amount of persons at single page", ge=1)
     ] = 50,
     page_number: Annotated[int, Query(description="Page number", ge=1)] = 1,
-    person_service: PersonService = Depends(get_person_service),
+    person_service: BasePersonService = Depends(get_person_service),
 ):
     """
     Получите человка по его имени.
@@ -39,7 +39,7 @@ async def person_search(
 @router.get("/{person_id}", response_model=Person)
 async def person_details(
     person_id: Annotated[str, Path(description="The ID of the person to get")],
-    person_service: PersonService = Depends(get_person_service),
+    person_service: BasePersonService = Depends(get_person_service),
 ):
     """
     Получите всю информацию о человеке по его id
@@ -58,7 +58,7 @@ async def person_details(
 @router.get("/{person_id}/film", response_model=list[FilmList])
 async def person_films(
     person_id: Annotated[str, Path(description="The ID of the person to get")],
-    person_service: PersonService = Depends(get_person_service),
+    person_service: BasePersonService = Depends(get_person_service),
 ):
     """
     Получите список фильмов, в которых снимался этот человек
@@ -82,7 +82,7 @@ async def all_persons(
         int, Query(description="Amount of persons at single page", ge=1)
     ] = 50,
     page_number: Annotated[int, Query(description="Page number", ge=1)] = 1,
-    person_service: PersonService = Depends(get_person_service),
+    person_service: BasePersonService = Depends(get_person_service),
 ):
     """
     Получите всех людей в базе данных.
