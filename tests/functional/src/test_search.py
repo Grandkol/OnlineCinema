@@ -1,40 +1,79 @@
 import datetime
 import uuid
+import time
 
 import aiohttp
 import pytest
 from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk
+from functional.settings import test_settings
+from functional.conftest import es_write_data, es_client, event_loop
 
-from tests.functional.settings import test_settings
-from tests.functional.conftest import es_write_data
 
-#  Название теста должно начинаться со слова `test_`
-#  Любой тест с асинхронными вызовами нужно оборачивать декоратором `pytest.mark.asyncio`, который следит за запуском и работой цикла событий.
-
+@pytest.mark.parametrize(
+    'query_data, expected_answer',
+    [
+        (
+                {'query': 'The Star Maker'},
+                {'status': 200, 'length': 50}
+        )
+    ]
+)
 @pytest.mark.asyncio
-async def test_search():
+async def test_search(es_write_data, query_data, expected_answer):
     # 1. Генерируем данные для ES
     es_data = [{
         'id': str(uuid.uuid4()),
-        'imdb_rating': 8.5,
-        'genre': ['Action', 'Sci-Fi'],
-        'title': 'The Star',
-        'description': 'New World',
-        'director': ['Stan'],
-        'actors_names': ['Ann', 'Bob'],
-        'writers_names': ['Ben', 'Howard'],
-        'actors': [
-            {'id': 'ef86b8ff-3c82-4d31-ad8e-72b69f4e3f95', 'name': 'Ann'},
-            {'id': 'fb111f22-121e-44a7-b78f-b19191810fbf', 'name': 'Bob'}
+        "title": "The Star Maker",
+        "imdb_rating": 7.4,
+        "description": "\"Dottore\" Joe Moretti travels round Sicily doing screen tests for the big Roman studios. "
+                       "He's a conman and takes money or favours for his efforts. Beata, a young illiterate convent "
+                       "girl desperately wants to change her life and falls for him, belatedly he realises his feelings "
+                       "for her. Their love affair is doomed when he's arrested.",
+        "genres": [
+            {
+                "id": "237fd1e4-c98e-454e-aa13-8a13fb7547b5",
+                "name": "Romance"
+            },
+            {
+                "id": "1cacff68-643e-4ddd-8f57-84b62538081a",
+                "name": "Drama"
+            }
         ],
-        'writers': [
-            {'id': 'caf76c67-c0fe-477e-8766-3ab3ff2574b5', 'name': 'Ben'},
-            {'id': 'b45bd7bc-2e16-46d5-b125-983d356768c6', 'name': 'Howard'}
+        "actors": [
+            {
+                "id": "a88f14e6-a8e2-4e05-9744-e89fadf960fb",
+                "name": "Franco Scaldati"
+            },
+            {
+                "id": "6d5964ff-e56e-40aa-9e30-6a52ed741e55",
+                "name": "Leopoldo Trieste"
+            },
+            {
+                "id": "e1d02f5f-bd47-4eb4-a9c3-1f353ffa9e54",
+                "name": "Sergio Castellitto"
+            },
+            {
+                "id": "f142081a-8054-4ec3-ae97-026f8ebdef3e",
+                "name": "Tiziana Lodato"
+            }
         ],
-        'created_at': datetime.datetime.now().isoformat(),
-        'updated_at': datetime.datetime.now().isoformat(),
-        'film_work_type': 'movie'
+        "writers": [
+            {
+                "id": "55dc3cfa-0731-42fe-9d7b-6180b00ab712",
+                "name": "Giuseppe Tornatore"
+            },
+            {
+                "id": "c740cb33-df3a-4aeb-b3ad-7e79581d857c",
+                "name": "Fabio Rinaudo"
+            }
+        ],
+        "directors": [
+            {
+                "id": "55dc3cfa-0731-42fe-9d7b-6180b00ab712",
+                "name": "Giuseppe Tornatore"
+            }
+        ]
     } for _ in range(60)]
 
     bulk_query: list[dict] = []
@@ -45,19 +84,18 @@ async def test_search():
 
     # 2. Загружаем данные в ES
     await es_write_data(bulk_query)
-
+    time.sleep(5)
     # 3. Запрашиваем данные из ES по API
 
     session = aiohttp.ClientSession()
-    url = test_settings.service_url + '/api/v1/search'
-    query_data = {'search': 'The Star'}
+    url = test_settings.service_url + '/api/v1/films/search'
     async with session.get(url, params=query_data) as response:
         body = await response.json()
+        print(body)
         headers = response.headers
         status = response.status
     await session.close()
 
     # 4. Проверяем ответ
-
-    assert status == 200
-    assert len(body) == 50
+    assert status == expected_answer['status']
+    assert len(body) == expected_answer['length']
