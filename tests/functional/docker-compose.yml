@@ -1,0 +1,45 @@
+services:
+
+  fastapi:
+    container_name: fastapi
+    build: ../../fastapi-service
+    image: fastapi-image
+    restart: always
+    env_file:
+      - ../.env
+    ports:
+      - 8000:8000
+
+  tests:
+      image: fastapi-image
+      entrypoint: >
+        sh -c "pip install -r /tests/functional/requirements.txt
+        && python3 /tests/functional/utils/wait_for_es.py
+        && pytest /tests/functional/src"
+
+      volumes:
+        - ../.:/tests
+
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - 6379:6379
+
+  elasticsearch:
+    container_name: elastic
+    image: elasticsearch:8.15.0
+    restart: always
+    ports:
+      - 9200:9200
+    # volumes:
+    #   - elastic:/usr/share/elasticsearch/data
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    healthcheck:
+      test: curl -s http://elasticsearch:9200 >/dev/null || exit 1
+      interval: 5s
+      timeout: 3s
+      retries: 5
