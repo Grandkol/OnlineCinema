@@ -12,15 +12,15 @@ router = APIRouter()
 async def film_detail_list(
     film_service: ElasticServiceFilm = Depends(get_film_service),
     query: Annotated[
-        str | None, Query(description="Query to find films", max_length=255)
+        str | None, Query(description="Query to find films")
     ] = None,
     page_size: Annotated[
         int, Query(description="Amount of films at single page", ge=1)
     ] = 50,
     page_number: Annotated[int, Query(description="Page number", ge=1)] = 1,
-    sort: Annotated[str, Query(description="Field to sort", max_length=20)] = None,
+    sort: Annotated[str, Query(description="Field to sort")] = None,
     genre: Annotated[
-        str, Query(description="Genre where search movies", max_length=20)
+        str, Query(description="Genre where search movies")
     ] = None,
 ) -> list[Film]:
     """

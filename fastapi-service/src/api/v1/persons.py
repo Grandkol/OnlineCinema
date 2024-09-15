@@ -12,7 +12,7 @@ router = APIRouter()
 @router.get("/search", response_model=list[Person])
 async def person_search(
     query: Annotated[
-        str | None, Query(description="Query to find persons", max_length=50)
+        str | None, Query(description="Query to find persons")
     ] = None,
     page_size: Annotated[
         int, Query(description="Amount of persons at single page", ge=1)
