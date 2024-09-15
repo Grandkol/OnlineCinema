@@ -10,6 +10,7 @@ from functional.settings import test_settings
 from functional.testdata.es_mapping import MAPPING_MOVIES
 
 
+
 @pytest_asyncio.fixture(scope="session")
 def event_loop():
     loop = asyncio.get_event_loop()
@@ -31,13 +32,27 @@ async def client_session():
     await session.close()
 
 
-@pytest_asyncio.fixture(name="es_write_data")
+@pytest_asyncio.fixture(name="bulk_query", scope="session")
+def bulk_query():
+    def inner(index, data):
+        es_data = data
+
+        bulk_query: list[dict] = []
+        for row in es_data:
+            data = {"_index": index, "_id": row["id"]}
+            data.update({"_source": row})
+            bulk_query.append(data)
+
+        return bulk_query
+    return inner
+
+
+@pytest_asyncio.fixture(name="es_write_data", scope="session")
 def es_write_data(es_client: AsyncElasticsearch):
-    async def inner(data: list[dict]):
+    async def inner(mapping, data: list[dict]):
         if await es_client.indices.exists(index=test_settings.es_index):
             await es_client.indices.delete(index=test_settings.es_index)
-        await es_client.indices.create(index=test_settings.es_index, **MAPPING_MOVIES)
-        print(data)
+        await es_client.indices.create(index=test_settings.es_index, **mapping)
         updated, errors = await async_bulk(client=es_client, actions=data)
         if errors:
             raise Exception("Ошибка записи данных в Elasticsearch")
@@ -45,15 +60,18 @@ def es_write_data(es_client: AsyncElasticsearch):
     return inner
 
 
-@pytest_asyncio.fixture(name="make_get_request")
+@pytest_asyncio.fixture(name="make_get_request", scope="session")
 def make_get_request(client_session):
     async def inner(endpoint, query_data: list[dict]):
+        # client_session = aiohttp.ClientSession()
         url = test_settings.service_url + endpoint
-        print(url)
+        # print(url+query_data)
         async with client_session.get(url, params=query_data) as response:
             body = await response.json()
-            print(body)
             status = response.status
+            print(body)
+            print(status)
+        # await client_session.close()
         return body, status
 
     return inner

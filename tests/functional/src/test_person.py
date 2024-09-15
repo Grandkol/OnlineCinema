@@ -13,34 +13,31 @@ from functional.conftest import (
     event_loop,
     make_get_request,
     client_session,
+    bulk_query
 )
-from functional.testdata.search_data import SEARCH_DATA
+from functional.testdata.person_data import SEARCH_PERSON_DATA
+from functional.testdata.es_mapping import MAPPING_PERSON
 
-
-API_FILMS = "films/search"
+API_PERSON_SEARCH = "persons/search"
+API_FILMS = "persons/"
 
 
 @pytest.mark.parametrize(
     "query_data, expected_answer",
-    [({"query": "The Star Maker"}, {"status": 200, "length": 50})],
+    [
+        ({"query": "Nick"},
+         {"status": 200, "length": 1})
+     ],
 )
 @pytest.mark.asyncio
-async def test_search(es_write_data, make_get_request, query_data, expected_answer):
+async def test_person_search(es_write_data, make_get_request, bulk_query, query_data, expected_answer):
     # 1. Генерируем данные для ES
-    es_data = SEARCH_DATA
-
-    bulk_query: list[dict] = []
-    for row in es_data:
-        data = {"_index": "movies", "_id": row["id"]}
-        data.update({"_source": row})
-        bulk_query.append(data)
-
+    bulk_query = bulk_query('persons', SEARCH_PERSON_DATA)
     # 2. Загружаем данные в ES
-    await es_write_data(bulk_query)
-    time.sleep(3)
+    await es_write_data(MAPPING_PERSON, bulk_query)
+    time.sleep(1)
     # 3. Запрашиваем данные из ES по API
-    response = await make_get_request(API_FILMS, query_data)
-    print(response)
+    response = await make_get_request(API_PERSON_SEARCH, query_data)
     # 4. Проверяем ответ
     assert response[1] == expected_answer["status"]
     assert len(response[0]) == expected_answer["length"]
