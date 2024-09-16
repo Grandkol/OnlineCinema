@@ -46,6 +46,7 @@ class CacheRedis(CacheAbstract):
         self, key: str, model: BaseModel
     ) -> list[BaseModel] | None:
         redis_keys = await self.redis.keys(f"{key}*")
+        redis_keys.sort()
         data = [await self.redis.get(k) for k in redis_keys]
         if not data:
             return None
