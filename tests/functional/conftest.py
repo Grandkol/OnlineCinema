@@ -1,4 +1,5 @@
 import pytest_asyncio
+from redis.asyncio import Redis
 from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk
 import pytest_asyncio
@@ -29,6 +30,14 @@ async def client_session():
     yield session
     await session.close()
 
+
+@pytest_asyncio.fixture(name="redis", scope='session')
+async def redis() -> Redis:
+    redis = await Redis(host='redis', port="6379")
+    await redis.flushall()
+    yield redis
+    redis.close()
+    await redis.wait_closed()
 
 @pytest_asyncio.fixture(name="bulk_query", scope="session")
 def bulk_query():
