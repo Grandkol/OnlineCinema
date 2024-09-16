@@ -37,7 +37,7 @@ async def redis() -> Redis:
     await redis.flushall()
     yield redis
     redis.close()
-    await redis.wait_closed()
+
 
 @pytest_asyncio.fixture(name="bulk_query", scope="session")
 def bulk_query():
