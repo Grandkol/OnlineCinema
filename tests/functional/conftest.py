@@ -7,8 +7,6 @@ import aiohttp
 
 import pytest
 from functional.settings import test_settings
-from functional.testdata.es_mapping import MAPPING_MOVIES
-
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -63,15 +61,10 @@ def es_write_data(es_client: AsyncElasticsearch):
 @pytest_asyncio.fixture(name="make_get_request", scope="session")
 def make_get_request(client_session):
     async def inner(endpoint, query_data: list[dict]):
-        # client_session = aiohttp.ClientSession()
         url = test_settings.service_url + endpoint
-        # print(url+query_data)
         async with client_session.get(url, params=query_data) as response:
             body = await response.json()
             status = response.status
-            print(body)
-            print(status)
-        # await client_session.close()
         return body, status
 
     return inner

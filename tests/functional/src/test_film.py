@@ -25,7 +25,9 @@ API_FILMS = "films/"
 @pytest.mark.parametrize(
     "query_data, expected_answer",
     [
-        ({"query": "The Star Maker"},
+        ({"query": "The Star Maker",
+          "genre": "1cacff68-643e-4ddd-8f57-84b62538081a",
+          "sort": "-imdb_rating"},
          {"status": 200, "length": 50})
      ],
 )
