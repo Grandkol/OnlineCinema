@@ -10,6 +10,21 @@ import pytest
 from functional.settings import test_settings
 
 
+def _load_schema(index: str) -> str:
+    """Функция читает схему из файла
+
+    Args:
+        path_file (str): Файл схемы.
+
+    Returns:
+        str: Схема, полученная из файла.
+    """
+    path_file = f"/tests/functional/testdata/schemas/schema-{index}.json"
+    with open(path_file, "r") as file:
+        schema = file.read()
+    return schema
+
+
 @pytest_asyncio.fixture(scope="session")
 def event_loop():
     loop = asyncio.get_event_loop()
@@ -59,7 +74,7 @@ def es_write_data(es_client: AsyncElasticsearch):
     async def inner(mapping, data: list[dict]):
         if await es_client.indices.exists(index=test_settings.es_index):
             await es_client.indices.delete(index=test_settings.es_index)
-        await es_client.indices.create(index=test_settings.es_index, **mapping)
+        await es_client.indices.create(index=test_settings.es_index, body=mapping)
         updated, errors = await async_bulk(client=es_client, actions=data)
         if errors:
             raise Exception("Ошибка записи данных в Elasticsearch")

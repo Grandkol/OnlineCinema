@@ -10,4 +10,4 @@ SEARCH_PERSON_DATA = [{
                                 ]
                             }
                         ]
-                    }for _ in range(60)]
+                    }]
