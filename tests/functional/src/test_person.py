@@ -23,22 +23,22 @@ API_FILMS = "persons/"
 SCHEMA = _load_schema('persons')
 
 
-# @pytest.mark.parametrize(
-#     "query_data, expected_answer",
-#     [
-#         ({"query": "Nick"},
-#          {"status": 200, "length": 1})
-#      ],
-# )
-# @pytest.mark.asyncio
-# async def test_person_search(es_write_data, make_get_request, bulk_query, query_data, expected_answer):
-#     # 1. Генерируем данные для ES
-#     bulk_query = bulk_query('persons', SEARCH_PERSON_DATA)
-#     # 2. Загружаем данные в ES
-#     await es_write_data(SCHEMA, bulk_query)
-#     time.sleep(1)
-#     # 3. Запрашиваем данные из ES по API
-#     response = await make_get_request(API_PERSON_SEARCH, query_data)
-#     # 4. Проверяем ответ
-#     assert response[1] == expected_answer["status"]
-#     assert len(response[0]) == expected_answer["length"]
+@pytest.mark.parametrize(
+    "query_data, expected_answer",
+    [
+        ({"query": "Nick"},
+         {"status": 200, "length": 1})
+     ],
+)
+@pytest.mark.asyncio
+async def test_person_search(es_write_data, make_get_request, bulk_query, query_data, expected_answer):
+    # 1. Генерируем данные для ES
+    bulk_query = bulk_query('persons', SEARCH_PERSON_DATA)
+    # 2. Загружаем данные в ES
+    await es_write_data(SCHEMA, bulk_query)
+    time.sleep(1)
+    # 3. Запрашиваем данные из ES по API
+    response = await make_get_request(API_PERSON_SEARCH, query_data)
+    # 4. Проверяем ответ
+    assert response[1] == expected_answer["status"]
+    assert len(response[0]) == expected_answer["length"]
