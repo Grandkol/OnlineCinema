@@ -30,10 +30,18 @@ SCHEMA = _load_schema('movies')
 @pytest.mark.parametrize(
     "query_data, expected_answer",
     [
-        ({"query": "The Star Maker",
-          "genre": "1cacff68-643e-4ddd-8f57-84b62538081a",
-          "sort": "-imdb_rating"},
-         {"status": 200, "length": 50})
+        (
+                {"query": "The Star Maker",
+                 "genre": "1cacff68-643e-4ddd-8f57-84b62538081a",
+                 "sort": "-imdb_rating"},
+                {"status": 200, "length": 50}
+        ),
+        (
+                {"query": "lalallalal",
+                 "genre": "1cacff68-643e-4ddd-8f57-84b62538081a",
+                 "sort": "-imdb_rating"},
+                {"status": 404, "length": 1}
+        ),
      ],
 )
 @pytest.mark.asyncio
@@ -52,7 +60,12 @@ async def test_film_search(es_write_data, make_get_request, bulk_query, query_da
 
 @pytest.mark.parametrize(
     "query_data, expected_answer",
-    [({}, {"status": 200, "length": 8})],
+    [
+        (
+                {},
+                {"status": 200, "length": 8}
+        )
+    ],
 )
 @pytest.mark.asyncio
 async def test_film(es_write_data, make_get_request, bulk_query, query_data, expected_answer):
