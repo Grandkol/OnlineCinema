@@ -67,25 +67,25 @@ async def test_film(es_write_data, make_get_request, bulk_query, query_data, exp
     assert len(response[0]) == expected_answer["length"]
 
 
-# @pytest.mark.parametrize(
-#     "query_data, expected_answer",
-#     [({}, {"status": 200, "length": 8})],
-# )
-# @pytest.mark.asyncio
-# async def test_film_cache(es_write_data, make_get_request, bulk_query, query_data, expected_answer, es_client):
-#     bulk_query = bulk_query('movies', FILM_DATA)
-#     # 2. Загружаем данные в ES
-#     await es_write_data(SCHEMA, bulk_query)
-#     # 3. Запрашиваем данные из ES по API
-#     response = await make_get_request(API_FILMS + '1acfccf3-c5f5-4b98-9456-24e3d553a604', query_data)
-#     # 4. Проверяем ответ
-#     assert response[1] == expected_answer["status"]
-#
-#     #Удаляем из es индекс
-#     await es_client.indices.delete(index="movies")
-#
-#     #Пытаемся снова получить фильм, но уже из редис
-#     response = await make_get_request(API_FILMS + '1acfccf3-c5f5-4b98-9456-24e3d553a604', query_data)
-#
-#     assert response[1] == expected_answer["status"]
-#     assert len(response[0]) == expected_answer["length"]
+@pytest.mark.parametrize(
+    "query_data, expected_answer",
+    [({}, {"status": 200, "length": 8})],
+)
+@pytest.mark.asyncio
+async def test_film_cache(es_write_data, make_get_request, bulk_query, query_data, expected_answer, es_client):
+    bulk_query = bulk_query('movies', FILM_DATA)
+    # 2. Загружаем данные в ES
+    await es_write_data(SCHEMA, bulk_query)
+    # 3. Запрашиваем данные из ES по API
+    response = await make_get_request(API_FILMS + '1acfccf3-c5f5-4b98-9456-24e3d553a604', query_data)
+    # 4. Проверяем ответ
+    assert response[1] == expected_answer["status"]
+
+    #Удаляем из es индекс
+    await es_client.indices.delete(index="movies")
+
+    #Пытаемся снова получить фильм, но уже из редис
+    response = await make_get_request(API_FILMS + '1acfccf3-c5f5-4b98-9456-24e3d553a604', query_data)
+
+    assert response[1] == expected_answer["status"]
+    assert len(response[0]) == expected_answer["length"]
