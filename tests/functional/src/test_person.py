@@ -26,8 +26,10 @@ SCHEMA = _load_schema('persons')
 @pytest.mark.parametrize(
     "query_data, expected_answer",
     [
-        ({"query": "Nick"},
-         {"status": 200, "length": 1})
+        (
+                {"query": "Nick"},
+                {"status": 200, "length": 1}
+        )
      ],
 )
 @pytest.mark.asyncio
