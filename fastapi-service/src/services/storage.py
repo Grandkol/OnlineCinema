@@ -109,25 +109,35 @@ class StorageFilmElastic(StorageBaseElastic, AbstractStorageFilm):
                 body_query["sort"] = {"imdb_rating": "desc"}
             if query:
                 body_query["query"] = {
-                    "multi_match": {
-                        "query": query,
-                        "fields": ["*"],
-                        "fuzziness": "AUTO",
+
+                        "multi_match": {
+                            "query": query,
+                            "fields": ["*"],
+                            "fuzziness": "AUTO",
+                        }
                     }
-                }
             if genre:
                 body_query["sort"] = {
                     "genres.id": {
                         "mode": "max",
                         "order": "asc",
                         "nested": {
-                            "path": "genres",
-                            "filter": {
-                                "bool": {"must": [{"match": {"genres.id": genre}}]}
-                            },
-                        },
+                          "path": "genres",
+                          "filter": {
+                            "bool": {
+                              "must": [
+                                {
+                                  "match": {
+                                    "genres.id": genre
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
                     }
                 }
+
             doc = await self.elastic.search(index="movies", body=body_query)
             documents = doc["hits"]["hits"]
         except NotFoundError:
