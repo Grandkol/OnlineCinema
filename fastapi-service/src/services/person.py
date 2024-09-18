@@ -25,6 +25,8 @@ class BasePersonService(BaseService, AbstractPersonService):
             for movie in person_data.films:
                 movie_id = movie["id"]
                 movie_data = await self.get_by_id(movie_id, index="movies", model=Film)
+                if not movie_data:
+                    return None
                 result_data.append(
                     FilmList(
                         id=movie_data.id,

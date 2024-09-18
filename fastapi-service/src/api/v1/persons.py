@@ -11,9 +11,7 @@ router = APIRouter()
 
 @router.get("/search", response_model=list[Person])
 async def person_search(
-    query: Annotated[
-        str | None, Query(description="Query to find persons")
-    ] = None,
+    query: Annotated[str | None, Query(description="Query to find persons")] = None,
     page_size: Annotated[
         int, Query(description="Amount of persons at single page", ge=1)
     ] = 50,
@@ -49,6 +47,7 @@ async def person_details(
     - **films**: Фильмы, в съемках которых данный человек принимал участие, а также его роль
 
     """
+
     person = await person_service.get_by_id(person_id)
     if not person:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Person not found")
