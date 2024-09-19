@@ -18,7 +18,7 @@ class ElasticSearchLoader:
             f"http://{self.config.host}:{self.config.port}"
         )
 
-    def _load_schema(self, index: str) -> str:
+    def load_schema(self, index: str) -> str:
         """Функция читает схему из файла
 
         Args:
@@ -37,7 +37,7 @@ class ElasticSearchLoader:
         """Функция создает индекс, если такой индекс уже существует, то
         пропускает создание.
         """
-        schema = self._load_schema(index)
+        schema = self.load_schema(index)
         try:
             logger.info(f"Создание индекса: {index}")
             self.client.indices.create(index=index, body=schema)

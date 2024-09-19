@@ -51,9 +51,7 @@ class StorageBaseElastic(StorageAbstract):
                 "Для работы с Elasticsearch нужно передать index в вызове функции."
             )
         try:
-            print(item_id, index, model)
             doc = await self.elastic.get(index=index, id=item_id)
-            print(doc)
         except NotFoundError:
             return None
         return model(**doc["_source"])
@@ -109,32 +107,23 @@ class StorageFilmElastic(StorageBaseElastic, AbstractStorageFilm):
                 body_query["sort"] = {"imdb_rating": "desc"}
             if query:
                 body_query["query"] = {
-
-                        "multi_match": {
-                            "query": query,
-                            "fields": ["*"],
-                            "fuzziness": "AUTO",
-                        }
+                    "multi_match": {
+                        "query": query,
+                        "fields": ["*"],
+                        "fuzziness": "AUTO",
                     }
+                }
             if genre:
                 body_query["sort"] = {
                     "genres.id": {
                         "mode": "max",
                         "order": "asc",
                         "nested": {
-                          "path": "genres",
-                          "filter": {
-                            "bool": {
-                              "must": [
-                                {
-                                  "match": {
-                                    "genres.id": genre
-                                  }
-                                }
-                              ]
-                            }
-                          }
-                        }
+                            "path": "genres",
+                            "filter": {
+                                "bool": {"must": [{"match": {"genres.id": genre}}]}
+                            },
+                        },
                     }
                 }
 
