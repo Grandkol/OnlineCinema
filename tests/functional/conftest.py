@@ -42,7 +42,7 @@ async def es_client():
 async def client_session():
     session = aiohttp.ClientSession()
     yield session
-    await session.session.close()
+    await session.close()
 
 
 @pytest_asyncio.fixture(name="redis", scope="function")
