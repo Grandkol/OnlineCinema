@@ -8,9 +8,9 @@ class TestSettings(BaseSettings):
     es_index: str = Field("movies")
     # es_index_mapping: dict = Field("mapping", env="ELASTIC_MAPPING")
 
-    redis_host: str = Field("111", alias="REDIS_HOST")
+    redis_host: str = Field("redis", alias="REDIS_HOST")
     redis_port: int = Field(6379, alies="REDIS_PORT")
-    service_url: str = Field("http://localhost/api/v1/", alias="SERVICE_URL")
+    service_url: str = Field("http://fastapi:8000/api/v1/", alias="SERVICE_URL")
 
 
 test_settings = TestSettings()
