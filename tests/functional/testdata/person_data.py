@@ -1,13 +1,3 @@
-SEARCH_PERSON_DATA = [
-    {
-        "id": "142dd99d-e64c-46cd-a1d0-996a1ea8341b",
-        "full_name": "Nick Swardson",
-        "films": [
-            {"id": "935e418d-09f3-4de4-8ce3-c31f31580b12", "roles": ["actor", "writer"]}
-        ],
-    }
-]
-
 PERSON_DATA = [
     {
         "films": [{"id": "3e5351d6-4e4a-486b-8529-977672177a07", "roles": ["actor"]}],
@@ -55,6 +45,16 @@ PERSON_DATA = [
         "films": [{"id": "6bc22fab-cb58-4409-b7d0-0b3665a74ae8", "roles": ["actor"]}],
         "full_name": "Mick Wingert",
         "id": "9e4860b9-94d4-44f8-bb43-00b8e3eb4fcb",
+    },
+    {
+        "id": "5c360057-c51f-4376-bdf5-049b87fa853b",
+        "full_name": "Bradley Cooper",
+        "films": [
+            {
+                "id": "fda827f8-d261-4c23-9e9c-e42787580c4d",
+                "roles": ["director", "writer", "actor"],
+            }
+        ],
     },
     {
         "films": [{"id": "edb9d4d9-0e13-476c-960c-26f97f264ecb", "roles": ["actor"]}],

@@ -10,6 +10,7 @@ from redis.asyncio import Redis
 from services.base import AbstractPersonService, BaseElasticService, BaseService
 from services.cache import CacheRedis
 from services.storage import StoragePersonElastic
+from services.film import BaseFilmService
 
 PERSON_MAX_CACHE_TIMEOUT = 5
 
@@ -20,11 +21,17 @@ class BasePersonService(BaseService, AbstractPersonService):
         key = f"{self.index}:{person_id}:film"
         result_data = await self.cache._get_from_cache_many(key, FilmList)
         if not result_data:
-            person_data = await self.get_by_id(person_id)
+            person_data = await self.storage._get_item_from_storage(
+                person_id, Person, index="persons"
+            )
+            if not person_data:
+                return False
             result_data = []
             for movie in person_data.films:
                 movie_id = movie["id"]
-                movie_data = await self.get_by_id(movie_id, index="movies", model=Film)
+                movie_data = await self.storage._get_item_from_storage(
+                    movie_id, Film, index="movies"
+                )
                 if not movie_data:
                     return None
                 result_data.append(
