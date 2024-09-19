@@ -18,7 +18,7 @@ def load_schema(index: str) -> str:
     Returns:
         str: Схема, полученная из файла.
     """
-    path_file = f"tests/functional/testdata/schemas/schema-{index}.json"
+    path_file = f"/tests/functional/testdata/schemas/schema-{index}.json"
     with open(path_file, "r") as file:
         schema = json.load(file)
     return schema
@@ -59,7 +59,6 @@ async def redis() -> Redis:
 def bulk_query():
     def inner(index, data):
         es_data = data
-
         bulk_query: list[dict] = []
         for row in es_data:
             data = {"_index": index, "_id": row["id"]}
