@@ -33,7 +33,7 @@ def event_loop():
 
 @pytest_asyncio.fixture(name="es_client", scope="session")
 async def es_client():
-    es_client = AsyncElasticsearch(hosts="http://127.0.0.1:9200", verify_certs=False)
+    es_client = AsyncElasticsearch(hosts=test_settings.es_host, verify_certs=False)
     yield es_client
     await es_client.close()
 
