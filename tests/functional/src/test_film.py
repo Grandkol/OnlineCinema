@@ -1,5 +1,6 @@
 import asyncio
 import pytest
+from http import HTTPStatus
 from functional.conftest import (
     load_schema,
 )
@@ -20,7 +21,7 @@ SCHEMA = load_schema("movies")
                 "genre": "1cacff68-643e-4ddd-8f57-84b62538081a",
                 "sort": "-imdb_rating",
             },
-            {"status": 200, "length": 50},
+            {"status": HTTPStatus.OK, "length": 50},
         ),
         (
             {
@@ -30,7 +31,7 @@ SCHEMA = load_schema("movies")
                 "page_number": 1,
                 "page_size": 50,
             },
-            {"status": 404, "length": 1},
+            {"status": HTTPStatus.NOT_FOUND, "length": 1},
         ),
         (
             {
@@ -39,7 +40,7 @@ SCHEMA = load_schema("movies")
                 "page_number": 1,
                 "page_size": 50,
             },
-            {"status": 200, "length": 50},
+            {"status": HTTPStatus.OK, "length": 50},
         ),
         (
             {
@@ -49,7 +50,7 @@ SCHEMA = load_schema("movies")
                 "page_number": 1,
                 "page_size": 50,
             },
-            {"status": 200, "length": 50},
+            {"status": HTTPStatus.OK, "length": 50},
         ),
         (
             {
@@ -59,7 +60,7 @@ SCHEMA = load_schema("movies")
                 "page_number": "rerrere",
                 "page_size": 50,
             },
-            {"status": 422, "length": 1},
+            {"status": HTTPStatus.UNPROCESSABLE_ENTITY, "length": 1},
         ),
         (
             {
@@ -69,7 +70,7 @@ SCHEMA = load_schema("movies")
                 "page_number": 1,
                 "page_size": "rereee",
             },
-            {"status": 422, "length": 1},
+            {"status": HTTPStatus.UNPROCESSABLE_ENTITY, "length": 1},
         ),
     ],
 )
@@ -88,8 +89,12 @@ async def test_film_search(
 @pytest.mark.parametrize(
     "film_id, query_data, expected_answer",
     [
-        ("1acfccf3-c5f5-4b98-9456-24e3d553a604", {}, {"status": 200, "length": 8}),
-        ("lalalallalalalal", {}, {"status": 404, "length": 1}),
+        (
+            "1acfccf3-c5f5-4b98-9456-24e3d553a604",
+            {},
+            {"status": HTTPStatus.OK, "length": 8},
+        ),
+        ("lalalallalalalal", {}, {"status": HTTPStatus.NOT_FOUND, "length": 1}),
     ],
 )
 @pytest.mark.asyncio
@@ -105,7 +110,13 @@ async def test_film(
 
 @pytest.mark.parametrize(
     "film_id, query_data, expected_answer",
-    [("1acfccf3-c5f5-4b98-9456-24e3d553a604", {}, {"status": 200, "length": 8})],
+    [
+        (
+            "1acfccf3-c5f5-4b98-9456-24e3d553a604",
+            {},
+            {"status": HTTPStatus.OK, "length": 8},
+        )
+    ],
 )
 @pytest.mark.asyncio
 async def test_film_cache(
@@ -138,7 +149,7 @@ async def test_film_cache(
                 "page_number": 1,
                 "page_size": 50,
             },
-            {"status": 200, "length": 50},
+            {"status": HTTPStatus.OK, "length": 50},
         )
     ],
 )

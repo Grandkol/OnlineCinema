@@ -1,5 +1,6 @@
 import asyncio
 import pytest
+from http import HTTPStatus
 from functional.conftest import (
     load_schema,
 )
@@ -14,27 +15,27 @@ SCHEMA = load_schema("persons")
 @pytest.mark.parametrize(
     "query_data, expected_answer",
     [
-        ({"query": "aaaaa"}, {"status": 404, "length": 1}),
-        ({"query": "Nick"}, {"status": 200, "length": 22}),
+        ({"query": "aaaaa"}, {"status": HTTPStatus.NOT_FOUND, "length": 1}),
+        ({"query": "Nick"}, {"status": HTTPStatus.OK, "length": 22}),
         (
             {"query": "Nick", "page_number": 100, "page_size": 2},
-            {"status": 404, "length": 1},
+            {"status": HTTPStatus.NOT_FOUND, "length": 1},
         ),
         (
             {"query": "John", "page_number": 1, "page_size": 4},
-            {"status": 200, "length": 4},
+            {"status": HTTPStatus.OK, "length": 4},
         ),
         (
             {"query": "John", "page_number": 0, "page_size": 0},
-            {"status": 422, "length": 1},
+            {"status": HTTPStatus.UNPROCESSABLE_ENTITY, "length": 1},
         ),
         (
             {"query": "Nick", "page_number": "ererer", "page_size": 2},
-            {"status": 422, "length": 1},
+            {"status": HTTPStatus.UNPROCESSABLE_ENTITY, "length": 1},
         ),
         (
             {"query": "Nick", "page_number": 1, "page_size": "qw"},
-            {"status": 422, "length": 1},
+            {"status": HTTPStatus.UNPROCESSABLE_ENTITY, "length": 1},
         ),
     ],
 )
@@ -56,7 +57,7 @@ async def test_person_search(
     [
         (
             "009b7728-949e-4250-b9d0-690d97c6a86b",
-            200,
+            HTTPStatus.OK,
             {
                 "id": "009b7728-949e-4250-b9d0-690d97c6a86b",
                 "full_name": "Rick Austin",
@@ -65,7 +66,7 @@ async def test_person_search(
                 ],
             },
         ),
-        ("asdf45345353tgdfg", 404, {"detail": "Person not found"}),
+        ("asdf45345353tgdfg", HTTPStatus.NOT_FOUND, {"detail": "Person not found"}),
     ],
 )
 @pytest.mark.asyncio
@@ -85,7 +86,7 @@ async def test_person_detail(
     [
         (
             "5c360057-c51f-4376-bdf5-049b87fa853b",
-            200,
+            HTTPStatus.OK,
             [
                 {
                     "id": "fda827f8-d261-4c23-9e9c-e42787580c4d",
@@ -94,7 +95,11 @@ async def test_person_detail(
                 }
             ],
         ),
-        ("asdf45345353tgdfg", 404, {"detail": "Films for person not found"}),
+        (
+            "asdf45345353tgdfg",
+            HTTPStatus.NOT_FOUND,
+            {"detail": "Films for person not found"},
+        ),
     ],
 )
 @pytest.mark.asyncio
