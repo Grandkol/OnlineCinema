@@ -52,7 +52,7 @@ class BaseService(AbstractService):
     index: str | None = None
 
     async def get_by_id(self, item_id: str, *args, **kwargs) -> BaseModel | None:
-        key = f"{self.index}:{item_id}"
+        key = f"{self.index}:{item_id}:detail"
         model = kwargs.get("model", None)
         if model:
             kwargs.pop("model")

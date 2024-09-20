@@ -42,7 +42,7 @@ services:
     # volumes:
     #   - elastic:/usr/share/elasticsearch/data
     environment:
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       - discovery.type=single-node
       - xpack.security.enabled=false
     healthcheck:

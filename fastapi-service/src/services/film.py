@@ -19,7 +19,7 @@ class BaseFilmService(BaseService, AbstractFilmService):
     async def get_film_list(
         self, sort: str, genre: str, page_size: int, page_number: int, query: str
     ) -> list[Film] | None:
-        key = f"{self.index}:{query}:{page_size}:{page_number}:{sort}"
+        key = f"{self.index}:{query}:{page_size}:{page_number}:{sort}:{genre}"
         films = await self.cache._get_from_cache_many(key, FilmList)
         if not films:
             films = await self.storage._get_list_from_storage(
