@@ -2,9 +2,9 @@ import pytest_asyncio
 from redis.asyncio import Redis
 from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk
-import pytest_asyncio
 import asyncio
 import aiohttp
+import time
 import json
 from functional.settings import test_settings
 
@@ -33,7 +33,7 @@ def event_loop():
 
 @pytest_asyncio.fixture(name="es_client", scope="session")
 async def es_client():
-    es_client = AsyncElasticsearch(hosts=test_settings.es_host, verify_certs=False)
+    es_client = AsyncElasticsearch(hosts=f'http://{test_settings.es_host}:{test_settings.es_port}', verify_certs=False)
     yield es_client
     await es_client.close()
 
@@ -48,7 +48,7 @@ async def client_session():
 @pytest_asyncio.fixture(name="redis", scope="function")
 async def redis() -> Redis:
     redis = await Redis(
-        host="localhost", port=test_settings.redis_port, decode_responses=True
+        host=test_settings.redis_host, port=test_settings.redis_port, decode_responses=True
     )
     await redis.flushall()
     yield redis
@@ -89,6 +89,7 @@ def es_write_data(es_client: AsyncElasticsearch):
 def make_get_request(client_session):
     async def inner(endpoint, query_data: list[dict] | None = None):
         url = test_settings.service_url + endpoint
+        print(f'current_fixture={url}')
         async with client_session.get(url, params=query_data) as response:
             body = await response.json()
             status = response.status

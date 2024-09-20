@@ -6,26 +6,34 @@ services:
     image: fastapi-image
     restart: always
     env_file:
-      - ../.env
+      - ../../.env
     ports:
       - 8000:8000
+    networks:
+      - tests1
 
   tests:
       image: fastapi-image
+      working_dir: /
       entrypoint: >
         sh -c "pip install -r /tests/functional/requirements.txt
         && python3 /tests/functional/utils/wait_for_es.py
         && python3 /tests/functional/utils/wait_for_redis.py
-        && pytest /tests/functional/src"
-
+        && pytest  /tests/"
+      networks:
+      - tests1
       volumes:
         - ../.:/tests
+      env_file:
+        - ../../.env
 
   redis:
     image: redis:latest
     restart: always
     ports:
       - 6379:6379
+    networks:
+      - tests1
 
   elasticsearch:
     container_name: elastic
@@ -44,3 +52,9 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    networks:
+      - tests1
+
+networks:
+  tests1:
+    name: tests1
