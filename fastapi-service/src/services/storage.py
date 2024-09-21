@@ -43,13 +43,8 @@ class StorageBaseElastic(StorageAbstract):
         self.elastic = elastic
 
     async def _get_item_from_storage(
-        self, item_id: str, model: BaseModel, *args, **kwargs
+        self, item_id: str, model: BaseModel, index: str, *args, **kwargs
     ) -> BaseModel | None:
-        index = kwargs.get("index", None)
-        if not index:
-            raise ValueError(
-                "Для работы с Elasticsearch нужно передать index в вызове функции."
-            )
         try:
             doc = await self.elastic.get(index=index, id=item_id)
         except NotFoundError:
@@ -57,13 +52,14 @@ class StorageBaseElastic(StorageAbstract):
         return model(**doc["_source"])
 
     async def _get_all_from_storage(
-        self, page_size: int, page_number: int, model: BaseModel, *args, **kwargs
+        self,
+        page_size: int,
+        page_number: int,
+        index: str,
+        model: BaseModel,
+        *args,
+        **kwargs
     ):
-        index = kwargs.get("index", None)
-        if not index:
-            raise ValueError(
-                "Для работы с Elasticsearch нужно передать index в вызове функции."
-            )
         doc = {"match_all": {}}
         page_number = (page_number - 1) * page_size
         items = await self.elastic.search(

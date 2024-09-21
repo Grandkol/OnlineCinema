@@ -5,12 +5,12 @@ from db.redis import get_redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 from redis.asyncio import Redis
-from services.base import BaseElasticService, BaseService
+from services.base import BaseService
 from services.cache import CacheRedis
 from services.storage import StorageBaseElastic
 
 
-class ElasticServiceGenre(BaseElasticService, BaseService):
+class ElasticServiceGenre(BaseService):
     index = "genres"
 
 
