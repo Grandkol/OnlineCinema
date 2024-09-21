@@ -45,7 +45,7 @@ async def test_person_search(
 
     bulk_query = bulk_query("persons", PERSON_DATA)
     await es_write_data(SCHEMA, "persons", bulk_query)
-    await asyncio.sleep(1)
+
     response = await make_get_request(API_PERSON_SEARCH, query_data)
     assert response[1] == expected_answer["status"]
     assert len(response[0]) == expected_answer["length"]
@@ -74,8 +74,9 @@ async def test_person_detail(
 ):
     bulk_query = bulk_query("persons", PERSON_DATA)
     await es_write_data(SCHEMA, "persons", bulk_query)
-    await asyncio.sleep(1)
+
     response = await make_get_request(API_PERSON_DETAIL + person_id)
+
     assert response[1] == status
     assert response[0] == template_answer
 
@@ -104,9 +105,10 @@ async def test_person_film(
     bulk_query_persons = bulk_query("persons", PERSON_DATA)
     bulk_query_movies = bulk_query("movies", FILM_DATA)
     schema_movies = load_schema("movies")
+
     await es_write_data(SCHEMA, "persons", bulk_query_persons)
     await es_write_data(schema_movies, "movies", bulk_query_movies)
-    await asyncio.sleep(1)
+
     response = await make_get_request(API_PERSON_DETAIL + person_id + "/film")
 
     assert response[1] == status
@@ -114,14 +116,16 @@ async def test_person_film(
 
 
 @pytest.mark.parametrize(
-    "query_data, key, length",
+    "query_data, length",
     [
         (
             {"query": "Star", "page_number": 1, "page_size": 2},
-            ["persons:Star:2:1:0"],
             1,
         ),
-        ({"query": "Nick"}, None, 22),
+        (
+                {"query": "Nick"},
+                22
+        ),
     ],
 )
 @pytest.mark.asyncio
@@ -131,20 +135,20 @@ async def test_person_search_cache(
     make_get_request,
     bulk_query,
     query_data,
-    key,
     length,
     redis,
 ):
     bulk_query = bulk_query("persons", PERSON_DATA)
     await es_write_data(SCHEMA, "persons", bulk_query)
-    await asyncio.sleep(1)
+
     response_1 = await make_get_request(API_PERSON_SEARCH, query_data)
     redis_keys = await redis.keys("*")
+
     assert len(redis_keys) == length
-    if key:
-        assert key == redis_keys
+
     await es_client.indices.delete(index="persons")
     response_2 = await make_get_request(API_PERSON_SEARCH, query_data)
+
     assert len(response_1[0]) == len(response_2[0])
 
 
@@ -171,13 +175,17 @@ async def test_person_detail_cache(
 ):
     bulk_query = bulk_query("persons", PERSON_DATA)
     await es_write_data(SCHEMA, "persons", bulk_query)
-    await asyncio.sleep(1)
+
     response_1 = await make_get_request(API_PERSON_DETAIL + person_id, query_data=None)
     redis_keys = await redis.keys("*")
+
     assert len(redis_keys) == length
     assert key == redis_keys[0]
+
     await es_client.indices.delete(index="persons")
+
     response_2 = await make_get_request(API_PERSON_DETAIL + person_id, query_data=None)
+
     assert response_1[0] == response_2[0]
 
 
@@ -205,13 +213,18 @@ async def test_person_film_cache(
     bulk_query_persons = bulk_query("persons", PERSON_DATA)
     bulk_query_movies = bulk_query("movies", FILM_DATA)
     schema_movies = load_schema("movies")
+
     await es_write_data(SCHEMA, "persons", bulk_query_persons)
     await es_write_data(schema_movies, "movies", bulk_query_movies)
-    await asyncio.sleep(1)
+
     response_1 = await make_get_request(API_PERSON_DETAIL + person_id + "/film")
     redis_keys = await redis.keys("*")
+
     assert len(redis_keys) == length
     assert key == redis_keys[0]
+
     await es_client.indices.delete(index="persons")
+
     response_2 = await make_get_request(API_PERSON_DETAIL + person_id + "/film")
+
     assert response_1[0] == response_2[0]

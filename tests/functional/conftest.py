@@ -8,6 +8,7 @@ import time
 import json
 from functional.settings import test_settings
 
+pytest_plugins = "functional.fixtures"
 
 def load_schema(index: str) -> str:
     """Функция читает схему из файла
@@ -22,27 +23,6 @@ def load_schema(index: str) -> str:
     with open(path_file, "r") as file:
         schema = json.load(file)
     return schema
-
-
-@pytest_asyncio.fixture(scope="session")
-def event_loop():
-    loop = asyncio.get_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest_asyncio.fixture(name="es_client", scope="session")
-async def es_client():
-    es_client = AsyncElasticsearch(hosts=f'http://{test_settings.es_host}:{test_settings.es_port}', verify_certs=False)
-    yield es_client
-    await es_client.close()
-
-
-@pytest_asyncio.fixture(name="client_session", scope="session")
-async def client_session():
-    session = aiohttp.ClientSession()
-    yield session
-    await session.close()
 
 
 @pytest_asyncio.fixture(name="redis", scope="function")
@@ -61,7 +41,7 @@ def bulk_query():
         es_data = data
         bulk_query: list[dict] = []
         for row in es_data:
-            data = {"_index": index, "_id": row["id"]}
+            data = {"_index": index, "_id": row["id"], "refresh":"wait_for"}
             data.update({"_source": row})
             bulk_query.append(data)
 
@@ -78,7 +58,7 @@ def es_write_data(es_client: AsyncElasticsearch):
         await es_client.indices.create(
             index=index, mappings=mapping["mappings"], settings=mapping["settings"]
         )
-        updated, errors = await async_bulk(client=es_client, actions=data)
+        updated, errors = await async_bulk(client=es_client, actions=data, refresh=True)
         if errors:
             raise Exception("Ошибка записи данных в Elasticsearch")
 
