@@ -60,7 +60,6 @@ async def test_genre_detail(
 ):
     bulk_query = bulk_query("genres", GENRE_DATA)
     await es_write_data(SCHEMA, "genres", bulk_query)
-    await asyncio.sleep(1)
 
     response = await make_get_request(API_GENRES + genre_id)
 
@@ -80,7 +79,6 @@ async def test_genre_cache_search(
 
     bulk_query = bulk_query("genres", GENRE_DATA)
     await es_write_data(SCHEMA, "genres", bulk_query)
-    await asyncio.sleep(1)
 
     response_1 = await make_get_request(API_GENRES, query_data)
     redis_keys = await redis.keys("*")
@@ -108,7 +106,6 @@ async def test_genre_cache_detail(
 ):
     bulk_query = bulk_query("genres", GENRE_DATA)
     await es_write_data(SCHEMA, "genres", bulk_query)
-    await asyncio.sleep(1)
 
     response_1 = await make_get_request(API_GENRES + genre_id)
     redis_keys = await redis.keys("*")

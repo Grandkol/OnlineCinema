@@ -45,7 +45,6 @@ async def test_person_search(
 
     bulk_query = bulk_query("persons", PERSON_DATA)
     await es_write_data(SCHEMA, "persons", bulk_query)
-    await asyncio.sleep(1)
 
     response = await make_get_request(API_PERSON_SEARCH, query_data)
     assert response[1] == expected_answer["status"]
@@ -75,7 +74,6 @@ async def test_person_detail(
 ):
     bulk_query = bulk_query("persons", PERSON_DATA)
     await es_write_data(SCHEMA, "persons", bulk_query)
-    await asyncio.sleep(1)
 
     response = await make_get_request(API_PERSON_DETAIL + person_id)
 
@@ -110,7 +108,6 @@ async def test_person_film(
 
     await es_write_data(SCHEMA, "persons", bulk_query_persons)
     await es_write_data(schema_movies, "movies", bulk_query_movies)
-    await asyncio.sleep(1)
 
     response = await make_get_request(API_PERSON_DETAIL + person_id + "/film")
 
@@ -143,7 +140,6 @@ async def test_person_search_cache(
 ):
     bulk_query = bulk_query("persons", PERSON_DATA)
     await es_write_data(SCHEMA, "persons", bulk_query)
-    await asyncio.sleep(1)
 
     response_1 = await make_get_request(API_PERSON_SEARCH, query_data)
     redis_keys = await redis.keys("*")
@@ -179,7 +175,6 @@ async def test_person_detail_cache(
 ):
     bulk_query = bulk_query("persons", PERSON_DATA)
     await es_write_data(SCHEMA, "persons", bulk_query)
-    await asyncio.sleep(1)
 
     response_1 = await make_get_request(API_PERSON_DETAIL + person_id, query_data=None)
     redis_keys = await redis.keys("*")
@@ -221,7 +216,6 @@ async def test_person_film_cache(
 
     await es_write_data(SCHEMA, "persons", bulk_query_persons)
     await es_write_data(schema_movies, "movies", bulk_query_movies)
-    await asyncio.sleep(1)
 
     response_1 = await make_get_request(API_PERSON_DETAIL + person_id + "/film")
     redis_keys = await redis.keys("*")

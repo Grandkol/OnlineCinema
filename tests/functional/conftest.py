@@ -58,7 +58,7 @@ def es_write_data(es_client: AsyncElasticsearch):
         await es_client.indices.create(
             index=index, mappings=mapping["mappings"], settings=mapping["settings"]
         )
-        updated, errors = await async_bulk(client=es_client, actions=data)
+        updated, errors = await async_bulk(client=es_client, actions=data, refresh=True)
         if errors:
             raise Exception("Ошибка записи данных в Elasticsearch")
 
