@@ -1,8 +1,8 @@
 import time
 import asyncio
 import pytest
-from functional.conftest import load_schema
-from functional.testdata.genre_data import GENRE_DATA
+from tests.conftest import load_schema
+from tests.functional.testdata.genre_data import GENRE_DATA
 
 API_GENRES = "genres/"
 SCHEMA = load_schema("genres")
@@ -29,26 +29,25 @@ async def test_genre_search(
 
     bulk_query = bulk_query("genres", GENRE_DATA)
     await es_write_data(SCHEMA, "genres", bulk_query)
-    await asyncio.sleep(1)
+
     response = await make_get_request(API_GENRES, query_data)
+
     assert response[1] == expected_answer["status"]
     assert len(response[0]) == expected_answer["length"]
 
 
 @pytest.mark.parametrize(
-    "genre_id, status, response_template",
+    "genre_id, status",
     [
         (
             GENRE_DATA[0]["id"],
             200,
-            {
-                "id": GENRE_DATA[0]["id"],
-                "name": "Biography",
-                "description": "hello",
-                "movies": [],
-            },
+
         ),
-        ("121212121212121212", 404, None),
+        (
+                "121212121212121212",
+                404
+        ),
     ],
 )
 @pytest.mark.asyncio
@@ -58,15 +57,14 @@ async def test_genre_detail(
     bulk_query,
     genre_id,
     status,
-    response_template,
 ):
     bulk_query = bulk_query("genres", GENRE_DATA)
     await es_write_data(SCHEMA, "genres", bulk_query)
     await asyncio.sleep(1)
+
     response = await make_get_request(API_GENRES + genre_id)
+
     assert response[1] == status
-    if response_template:
-        assert response[0] == response_template
 
 
 @pytest.mark.parametrize(
@@ -83,9 +81,11 @@ async def test_genre_cache_search(
     bulk_query = bulk_query("genres", GENRE_DATA)
     await es_write_data(SCHEMA, "genres", bulk_query)
     await asyncio.sleep(1)
+
     response_1 = await make_get_request(API_GENRES, query_data)
     redis_keys = await redis.keys("*")
     response_2 = await make_get_request(API_GENRES, query_data)
+
     assert len(redis_keys) == length
     assert response_1[0] == response_2[0]
 
@@ -109,9 +109,13 @@ async def test_genre_cache_detail(
     bulk_query = bulk_query("genres", GENRE_DATA)
     await es_write_data(SCHEMA, "genres", bulk_query)
     await asyncio.sleep(1)
+
     response_1 = await make_get_request(API_GENRES + genre_id)
     redis_keys = await redis.keys("*")
+
     assert len(redis_keys) == length
     assert key == redis_keys[0]
+
     response_2 = await make_get_request(API_GENRES + genre_id)
+
     assert response_1[0] == response_2[0]

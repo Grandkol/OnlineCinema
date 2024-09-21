@@ -1,9 +1,9 @@
 import asyncio
 import pytest
-from functional.conftest import (
+from tests.conftest import (
     load_schema,
 )
-from functional.testdata.film_data import SEARCH_FILM_DATA, FILM_DATA
+from tests.functional.testdata.film_data import SEARCH_FILM_DATA, FILM_DATA
 
 
 API_FILMS_SEARCH = "films/search"
@@ -19,6 +19,7 @@ SCHEMA = load_schema("movies")
                 "query": "The Star Maker",
                 "genre": "1cacff68-643e-4ddd-8f57-84b62538081a",
                 "sort": "-imdb_rating",
+                "refresh": "wait_for"
             },
             {"status": 200, "length": 50},
         ),
@@ -68,6 +69,7 @@ SCHEMA = load_schema("movies")
                 "sort": "-imdb_rating",
                 "page_number": 1,
                 "page_size": "rereee",
+                "refresh": "wait_for"
             },
             {"status": 422, "length": 1},
         ),
@@ -79,8 +81,9 @@ async def test_film_search(
 ):
     bulk_query = bulk_query("movies", SEARCH_FILM_DATA)
     await es_write_data(SCHEMA, "movies", bulk_query)
-    await asyncio.sleep(1)
+
     response = await make_get_request(API_FILMS_SEARCH, query_data)
+
     assert response[1] == expected_answer["status"]
     assert len(response[0]) == expected_answer["length"]
 
@@ -98,7 +101,9 @@ async def test_film(
 ):
     bulk_query = bulk_query("movies", FILM_DATA)
     await es_write_data(SCHEMA, "movies", bulk_query)
+
     response = await make_get_request(API_FILMS + film_id, query_data)
+
     assert response[1] == expected_answer["status"]
     assert len(response[0]) == expected_answer["length"]
 
@@ -119,10 +124,15 @@ async def test_film_cache(
 ):
     bulk_query = bulk_query("movies", FILM_DATA)
     await es_write_data(SCHEMA, "movies", bulk_query)
+
     response = await make_get_request(API_FILMS + film_id, query_data)
+
     assert response[1] == expected_answer["status"]
+
     await es_client.indices.delete(index="movies")
+
     response = await make_get_request(API_FILMS + film_id, query_data)
+
     assert response[1] == expected_answer["status"]
     assert len(response[0]) == expected_answer["length"]
 
@@ -148,9 +158,14 @@ async def test_film_search_cache(
 ):
     bulk_query = bulk_query("movies", SEARCH_FILM_DATA)
     await es_write_data(SCHEMA, "movies", bulk_query)
+
     response = await make_get_request(API_FILMS_SEARCH, query_data)
+
     assert response[1] == expected_answer["status"]
+
     await es_client.indices.delete(index="movies")
+
     response = await make_get_request(API_FILMS_SEARCH, query_data)
+
     assert response[1] == expected_answer["status"]
     assert len(response[0]) == expected_answer["length"]
