@@ -1,8 +1,8 @@
 import time
 import asyncio
 import pytest
-from tests.conftest import load_schema
-from tests.functional.testdata.genre_data import GENRE_DATA
+from functional.conftest import load_schema
+from functional.testdata.genre_data import GENRE_DATA
 
 API_GENRES = "genres/"
 SCHEMA = load_schema("genres")

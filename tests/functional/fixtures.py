@@ -3,7 +3,7 @@ import asyncio
 from elasticsearch import AsyncElasticsearch
 import aiohttp
 
-from tests.functional.settings import test_settings
+from functional.settings import test_settings
 
 
 @pytest_asyncio.fixture(scope="session")

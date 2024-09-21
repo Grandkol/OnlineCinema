@@ -1,9 +1,9 @@
 import asyncio
 import pytest
-from tests.conftest import (
+from functional.conftest import (
     load_schema,
 )
-from tests.functional.testdata.film_data import SEARCH_FILM_DATA, FILM_DATA
+from functional.testdata.film_data import SEARCH_FILM_DATA, FILM_DATA
 
 
 API_FILMS_SEARCH = "films/search"

@@ -1,10 +1,10 @@
 import asyncio
 import pytest
-from tests.conftest import (
+from functional.conftest import (
     load_schema,
 )
-from tests.functional.testdata.person_data import PERSON_DATA
-from tests.functional.testdata.film_data import FILM_DATA
+from functional.testdata.person_data import PERSON_DATA
+from functional.testdata.film_data import FILM_DATA
 
 API_PERSON_SEARCH = "persons/search"
 API_PERSON_DETAIL = "persons/"

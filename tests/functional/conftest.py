@@ -6,9 +6,9 @@ import asyncio
 import aiohttp
 import time
 import json
-from tests.functional.settings import test_settings
+from functional.settings import test_settings
 
-pytest_plugins = "tests.fixtures"
+pytest_plugins = "functional.fixtures"
 
 def load_schema(index: str) -> str:
     """Функция читает схему из файла
