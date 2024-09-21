@@ -51,55 +51,49 @@ class BaseService(AbstractService):
     models = {"movies": Film, "persons": Person, "genres": Genre}
     index: str | None = None
 
-    async def get_by_id(self, item_id: str, *args, **kwargs) -> BaseModel | None:
+    async def get_by_id(
+        self,
+        item_id: str,
+        *args,
+        index: str = None,
+        model: BaseModel | None = None,
+        **kwargs,
+    ) -> BaseModel | None:
         key = f"{self.index}:{item_id}:detail"
-        model = kwargs.get("model", None)
-        if model:
-            kwargs.pop("model")
-        else:
+        if not model:
             model = self.models[self.index]
+        if not index:
+            index = self.index
         item = await self.cache._get_from_cache_single(key, model)
         if not item:
             item = await self.storage._get_item_from_storage(
-                item_id, model, *args, **kwargs
+                item_id, model, index, *args, **kwargs
             )
             if not item:
                 return None
             await self.cache._put_to_cache_single(key, item)
         return item
 
-    async def get_all(self, page_size: int, page_number: int, *args, **kwargs):
+    async def get_all(
+        self,
+        page_size: int,
+        page_number: int,
+        *args,
+        index: str = None,
+        model: BaseModel | None = None,
+        **kwargs,
+    ):
         key = f"{self.index}:{page_size}:{page_number}:all"
-        model = kwargs.get("model", None)
-        if model:
-            kwargs.pop("model")
-        else:
+        if not model:
             model = self.models[self.index]
+        if not index:
+            index = self.index
         items = await self.cache._get_from_cache_many(key, model)
         if not items:
             items = await self.storage._get_all_from_storage(
-                page_size, page_number, model, *args, **kwargs
+                page_size, page_number, index, model, *args, **kwargs
             )
             if not items:
                 return None
             await self.cache._put_to_cache_many(key, items)
         return items
-
-
-class BaseElasticService(AbstractService):
-
-    async def get_by_id(self, item_id: str, *args, **kwargs) -> BaseModel | None:
-        index = kwargs.get("index", None)
-        if index:
-            kwargs.pop("index")
-        else:
-            index = self.index
-        return await super().get_by_id(item_id, index=index, **kwargs)
-
-    async def get_all(self, page_size: int, page_number: int, *args, **kwargs):
-        index = kwargs.get("index", None)
-        if index:
-            kwargs.pop("index")
-        else:
-            index = self.index
-        return await super().get_all(page_size, page_number, index=index, **kwargs)

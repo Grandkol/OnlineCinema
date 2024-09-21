@@ -41,10 +41,12 @@ class ElasticSearchLoader:
         try:
             logger.info(f"Создание индекса: {index}")
             self.client.indices.create(index=index, body=schema)
+            return True
         except RequestError:
             logger.info(
                 f"Пропускаю создание индекса. Индекс с названием уже существует.", index
             )
+            return None
 
     def bulk_insert_data(self, data: dict, index: str) -> dict:
         """Функция вставляет массово вставляет данные

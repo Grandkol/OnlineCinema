@@ -48,10 +48,13 @@ class Database:
         Returns:
             connection: Объект подключения к базе данных.
         """
-        logger.info("Подключение к Postgres.")
-        conn = psycopg.connect(**self.pg_data, row_factory=dict_row)
-        logger.info("подключено успешно.")
-        return conn
+        try:
+            logger.info("Подключение к Postgres.")
+            conn = psycopg.connect(**self.pg_data, row_factory=dict_row)
+            logger.info("подключено успешно.")
+            return conn
+        except:
+            return False
 
     def close_connection(self):
         self.conn.close()

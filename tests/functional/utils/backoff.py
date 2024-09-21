@@ -1,11 +1,8 @@
 import time
 from functools import wraps
+import logging
 
-from elasticsearch.exceptions import ConnectionError
-from main_logger import MainLogger
-from psycopg import OperationalError
-
-logger = MainLogger().get_logger("backoff")
+logger = logging.get_logger("utils_tests")
 
 
 def backoff(start_sleep_time=0.1, factor=2, border_sleep_time=10, retries=10):

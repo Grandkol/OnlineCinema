@@ -6,7 +6,7 @@ from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 from models.film import Film, FilmList
 from redis.asyncio import Redis
-from services.base import AbstractFilmService, BaseElasticService, BaseService
+from services.base import AbstractFilmService, BaseService
 from services.cache import CacheRedis
 from services.storage import AbstractStorageFilm, StorageFilmElastic
 
@@ -36,7 +36,6 @@ class BaseFilmService(BaseService, AbstractFilmService):
 
 
 class ElasticServiceFilm(
-    BaseElasticService,
     BaseFilmService,
 ):
     index = "movies"

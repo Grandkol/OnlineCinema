@@ -1,6 +1,7 @@
 import time
 import asyncio
 import pytest
+from http import HTTPStatus
 from functional.conftest import load_schema
 from functional.testdata.genre_data import GENRE_DATA
 
@@ -13,9 +14,12 @@ SCHEMA = load_schema("genres")
     [
         (
             {"page_number": "2", "page_size": "1"},
-            {"status": 200, "length": 1},
+            {"status": HTTPStatus.OK, "length": 1},
         ),
-        ({"page_number": "1", "page_size": "50"}, {"status": 200, "length": 10}),
+        (
+            {"page_number": "1", "page_size": "50"},
+            {"status": HTTPStatus.OK, "length": 10},
+        ),
     ],
 )
 @pytest.mark.asyncio
@@ -41,13 +45,9 @@ async def test_genre_search(
     [
         (
             GENRE_DATA[0]["id"],
-            200,
-
+            HTTPStatus.OK,
         ),
-        (
-                "121212121212121212",
-                404
-        ),
+        ("121212121212121212", HTTPStatus.NOT_FOUND),
     ],
 )
 @pytest.mark.asyncio

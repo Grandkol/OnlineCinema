@@ -7,7 +7,7 @@ from fastapi import Depends
 from models.film import Film, FilmList
 from models.person import Person
 from redis.asyncio import Redis
-from services.base import AbstractPersonService, BaseElasticService, BaseService
+from services.base import AbstractPersonService, BaseService
 from services.cache import CacheRedis
 from services.storage import StoragePersonElastic
 from services.film import BaseFilmService
@@ -73,7 +73,6 @@ class BasePersonService(BaseService, AbstractPersonService):
 
 
 class ElasticServicePerson(
-    BaseElasticService,
     BasePersonService,
 ):
     index = "persons"
