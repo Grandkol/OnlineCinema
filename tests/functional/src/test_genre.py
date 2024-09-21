@@ -82,9 +82,9 @@ async def test_genre_cache_search(
 
     response_1 = await make_get_request(API_GENRES, query_data)
     redis_keys = await redis.keys("*")
-    response_2 = await make_get_request(API_GENRES, query_data)
-
     assert len(redis_keys) == length
+
+    response_2 = await make_get_request(API_GENRES, query_data)
     assert response_1[0] == response_2[0]
 
 
