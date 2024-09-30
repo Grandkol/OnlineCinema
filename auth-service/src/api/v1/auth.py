@@ -9,7 +9,7 @@ from models.entity import User
 
 router = APIRouter()
 
-@router.post('/signup', response_model=UserInDB, status_code=status.HTTP_201_CREATED)
+@router.post('/reg', response_model=UserInDB, status_code=status.HTTP_201_CREATED)
 async def create_user(user_create: UserCreate, db: AsyncSession = Depends(get_session)) -> UserInDB:
     user_dto = jsonable_encoder(user_create)
     user = User(**user_dto)
@@ -17,3 +17,8 @@ async def create_user(user_create: UserCreate, db: AsyncSession = Depends(get_se
     await db.commit()
     await db.refresh(user)
     return user
+
+
+# @router.post('/login')
+# def auth_user(user: ):
+#     pass
