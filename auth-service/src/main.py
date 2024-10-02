@@ -9,6 +9,8 @@ from db.postgres import create_database, purge_database
 from db.redis_db import redis
 
 
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     redis = Redis(host=settings.redis_host, port=settings.redis_port, db=0, decode_responses=True)

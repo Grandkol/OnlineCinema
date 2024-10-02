@@ -1,74 +1,79 @@
 services:
-  fast-api:
-    build: ./fastapi-service
-    restart: always
-    env_file:
-      - .env
-    ports:
-      - 8000:8000
+  # fast-api:
+  #   build: ./fastapi-service
+  #   restart: always
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - 8000:8000
 
   auth:
     build: ./auth-service
     restart: always
+    develop:
+      watch:
+        - action: sync
+          path: ./auth-service/src
+          target: /app
     env_file:
       - .env
     ports:
       - 8001:8001
 
-  etl:
-    build: ./etl
-    restart: always
-    env_file:
-      - .env
-    ports:
-      - 3001:3001
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
+  # etl:
+  #   build: ./etl
+  #   restart: always
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - 3001:3001
+  #   depends_on:
+  #     elasticsearch:
+  #       condition: service_healthy
 
-  theatre-db:
-    image: postgres:16
-    ports:
-      - 5432:5432
-    env_file:
-      - .env
-    volumes:
-      - ./database_dump.sql:/docker-entrypoint-initdb.d/init.sql
+  # theatre-db:
+  #   image: postgres:16
+  #   ports:
+  #     - 5432:5432
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - ./database_dump.sql:/docker-entrypoint-initdb.d/init.sql
 
-  redis:
-    image: redis:latest
-    restart: always
-    ports:
-      - 6379:6379
+  # redis:
+  #   image: redis:latest
+  #   restart: always
+  #   ports:
+  #     - 6379:6379
 
-  elasticsearch:
-    container_name: elastic
-    image: elasticsearch:8.15.0
-    restart: always
-    ports:
-      - 9200:9200
-    # volumes:
-    #   - elastic:/usr/share/elasticsearch/data
-    environment:
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-    healthcheck:
-      test: curl -s http://elasticsearch:9200 >/dev/null || exit 1
-      interval: 5s
-      timeout: 3s
-      retries: 5
+  # elasticsearch:
+  #   container_name: elastic
+  #   image: elasticsearch:8.15.0
+  #   restart: always
+  #   ports:
+  #     - 9200:9200
+  #   # volumes:
+  #   #   - elastic:/usr/share/elasticsearch/data
+  #   environment:
+  #     - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+  #     - discovery.type=single-node
+  #     - xpack.security.enabled=false
+  #   healthcheck:
+  #     test: curl -s http://elasticsearch:9200 >/dev/null || exit 1
+  #     interval: 5s
+  #     timeout: 3s
+  #     retries: 5
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/site.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      fast-api:
-        condition: service_started
+  # nginx:
+  #   image: nginx:latest
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./nginx/site.conf:/etc/nginx/conf.d/default.conf
+  #   depends_on:
+  #     fast-api:
+  #       condition: service_started
 
 
 volumes:

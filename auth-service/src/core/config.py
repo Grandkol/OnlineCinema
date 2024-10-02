@@ -25,11 +25,11 @@ class Settings(BaseSettings):
     elastic_host: str = Field("127.0.0.1", alias="ELASTIC_HOST")
     elastic_port: int = Field(9200, alias="ELASTIC_PORT")
 
-    # host: str = Field("127.0.0.1", alias="DB_HOST"),
-    # port: int = Field(5432, alias="DB_PORT"),
-    # db_name: str = Field("postgres", alias="DB_NAME"),
-    # user: str = Field("postgres", alias="DB_USER"),
-    # password: str = Field("123", alias="POSTGRES_PASSWORD"),
+    db_host: str = Field("127.0.0.1", alias="DB_HOST")
+    db_port: int = Field(5432, alias="DB_PORT")
+    db_name: str = Field("postgres", alias="DB_NAME")
+    db_user: str = Field("postgres", alias="DB_USER")
+    db_password: str = Field("123", alias="POSTGRES_PASSWORD")
     auth_jwt: AuthJWT = AuthJWT()
 
     base_dir: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
