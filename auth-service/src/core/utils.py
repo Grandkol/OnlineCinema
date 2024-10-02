@@ -19,13 +19,13 @@ def encode_jwt(
 
 def decode_jwt(
     token: str | bytes,
-    publick_key: str = settings.auth_jwt.public_key_path.read_text(),
+    public_key: str = settings.auth_jwt.public_key_path.read_text(),
     algorithm: str = settings.auth_jwt.algorithm
 ):
 
     decoded = jwt.decode(
         token,
-        publick_key,
+        public_key,
         algorithms=[algorithm]
     )
 

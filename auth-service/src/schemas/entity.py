@@ -15,3 +15,7 @@ class UserInDB(BaseModel):
 
     class Config:
         orm_mode = True
+
+class TokenInfo(BaseModel):
+    access_token: str
+    token_type: str
