@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from contextlib import asynccontextmanager
@@ -5,19 +6,19 @@ from redis.asyncio import Redis
 
 from core.config import settings
 from api.v1 import auth
-from db.postgres import create_database, purge_database
+from db.postgres import db_helper
 from db.redis_db import redis
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     redis = Redis(host=settings.redis_host, port=settings.redis_port, db=0, decode_responses=True)
-    await create_database()
 
     yield
 
-    await redis.redis.close()
-    await purge_database()
+    await db_helper.dispose()
+
+    await redis.close()
 
 
 
@@ -31,3 +32,12 @@ app = FastAPI(
 
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host=settings.run_config.host,
+        port=settings.run_config.port,
+        reload=True,
+    )
