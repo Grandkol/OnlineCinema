@@ -1,28 +1,25 @@
 import uuid
 from datetime import datetime
-
+from enum import unique
+from datetime import datetime
+from redis.commands.search.querystring import union
 from sqlalchemy import Boolean, Column, DateTime, String
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped
+from sqlalchemy.testing.schema import mapped_column
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from db.postgres import Base
+from models.base import Base
 
 
 class User(Base):
-    __tablename__ = "users"
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        unique=True,
-        nullable=False,
-    )
-    login = Column(String(255), unique=True, nullable=False)
-    password = Column(String(255), nullable=False)
-    first_name = Column(String(50))
-    last_name = Column(String(50))
-    created_at = Column(DateTime, default=datetime.utcnow)
+
+    login: Mapped[str] = mapped_column(unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(nullable=False)
+    first_name: Mapped[str] = mapped_column()
+    last_name: Mapped[str] = mapped_column()
+    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
     def __init__(
         self, login: str, password: str, first_name: str, last_name: str

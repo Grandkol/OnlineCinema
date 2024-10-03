@@ -4,10 +4,10 @@ from rest_framework import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas.entity import UserInDB, UserCreate, TokenInfo
-from models.entity import User
+from models import User
 from core import utils
 
-router = APIRouter()
+# router = APIRouter()
 
 
 # @router.post("/reg", response_model=UserInDB, status_code=status.HTTP_201_CREATED)
