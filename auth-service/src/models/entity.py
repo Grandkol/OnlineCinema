@@ -14,7 +14,6 @@ from models.base import Base
 
 class User(Base):
 
-
     login: Mapped[str] = mapped_column(unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
     first_name: Mapped[str] = mapped_column()
@@ -26,6 +25,7 @@ class User(Base):
     ) -> None:
         self.login = login
         self.password = self.password = generate_password_hash(password)
+        # self.password = password
         self.first_name = first_name
         self.last_name = last_name
 

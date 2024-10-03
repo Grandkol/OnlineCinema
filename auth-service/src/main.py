@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from redis.asyncio import Redis
 
 from core.config import settings
-# from api.v1 import auth
+from api.v1 import auth
 from db import db_helper
 from models import Base
 from db.redis_db import redis
@@ -32,7 +32,7 @@ app = FastAPI(
 )
 
 
-# app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 
 
 if __name__ == "__main__":

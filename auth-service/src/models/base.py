@@ -9,4 +9,4 @@ class Base(DeclarativeBase):
     def __tablename__(cls) -> str:
         return f"{cls.__name__.lower()}s"
 
-    id: Mapped[str] = mapped_column(primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)

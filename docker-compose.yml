@@ -7,13 +7,13 @@ services:
     ports:
       - 8000:8000
 
-  auth:
-    build: ./auth-service
-    restart: always
-    env_file:
-      - .env
-    ports:
-      - 8001:8001
+#  auth:
+#    build: ./auth-service
+#    restart: always
+#    env_file:
+#      - .env
+#    ports:
+#      - 8001:8001
 
   etl:
     build: ./etl
