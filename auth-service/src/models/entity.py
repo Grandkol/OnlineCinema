@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy.sql import func
 from sqlalchemy import Table
@@ -38,30 +39,3 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f'<User {self.login}>'
-
-
-roles_permissions_table = Table(
-    "roles_permissions",
-    Base.metadata,
-    Column('id', UUID_PG),
-    Column('role_id', ForeignKey("roles.id")),
-    Column('permission_id', ForeignKey("permissions.id")),
-)
-
-class Roles(Base):
-    __tablename__ = 'roles'
-
-    id: Mapped[UUID] = mapped_column(primary_key=True)
-    title: Mapped[str]
-    created: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    permissions: Mapped[list["Permissions"]] = relationship(secondary=roles_permissions_table)
-
-
-
-
-class Permissions(Base):
-    __tablename__ = 'permissions'
-
-    id: Mapped[UUID] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    created: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
