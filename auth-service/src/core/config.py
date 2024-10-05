@@ -13,9 +13,9 @@ BASE_DIR = Path(__file__).parent.parent
 
 
 class AuthJWT(BaseModel):
-    private_key_path: Path = BASE_DIR / "certs" / "jwt-private.pem"
+    jwt_secret_name: str
     public_key_path: Path = BASE_DIR / "certs" / "jwt-public.pem"
-    algorithm: str = "RS256"
+    algorithm: str
 
 
 class DatabaseConfig(BaseSettings):
@@ -42,7 +42,9 @@ class Settings(BaseSettings):
     redis_host: str = Field("127.0.0.1", alias="REDIS_HOST")
     redis_port: int = Field(6379, alias="REDIS_PORT")
 
-    auth_jwt: AuthJWT = AuthJWT()
+
+    private_key_path: Path = BASE_DIR / "certs" / "jwt-private.pem"
+    auth_jwt: AuthJWT
     run_config: RunConfig = RunConfig()
 
     db: DatabaseConfig
@@ -51,4 +53,5 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-print(settings.db.url)
+# print(settings.private_key_path.read_text())
+print(settings.auth_jwt.algorithm)

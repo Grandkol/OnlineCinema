@@ -1,5 +1,5 @@
 CREATE SCHEMA IF NOT EXISTS content;
-
+CREATE SCHEMA IF NOT EXISTS auth;
 
 ALTER SCHEMA content OWNER TO postgres;
 

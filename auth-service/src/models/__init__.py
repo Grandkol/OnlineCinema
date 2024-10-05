@@ -4,4 +4,4 @@ __all__ =(
 )
 
 from .base import Base
-from .entity import User
+from .user import User

@@ -1,28 +1,43 @@
 from core.config import settings
 import jwt
 import bcrypt
+from datetime import datetime, timedelta
 
 
-def encode_jwt(
+async def encode_access_token(
     payload: dict,
-    private_key: str = settings.auth_jwt.private_key_path.read_text(),
+    expiry: float,
+    private_key: str = settings.private_key_path.read_text(),
     algorithm: str = settings.auth_jwt.algorithm,
 ):
+    expire_in = datetime.utcnow() + expiry
+    payload.update({"exp": expire_in})
 
-    encoded = jwt.encode(payload, private_key, algorithm=algorithm)
+    encoded = jwt.encode(payload, key=private_key, algorithm=algorithm)
 
     return encoded
 
 
-def decode_jwt(
-    token: str | bytes,
-    public_key: str = settings.auth_jwt.public_key_path.read_text(),
+async def encode_refresh_token(
+    payload: dict,
+    expiry: float,
+    private_key: str = settings.private_key_path.read_text(),
     algorithm: str = settings.auth_jwt.algorithm,
 ):
+    expire_in = datetime.utcnow() + expiry
+    payload.update({"exp": expire_in})
+    return jwt.encode(payload, key=private_key, algorithm=algorithm)
 
-    decoded = jwt.decode(token, public_key, algorithms=[algorithm])
 
-    return decoded
+# def decode_access_token(
+#     token: str | bytes,
+#     public_key: str = settings.auth_jwt.jwt_secret_name,
+#     algorithm: str = settings.auth_jwt.algorithm,
+# ):
+#
+#     decoded = jwt.decode(token, public_key, algorithms=[algorithm])
+#
+#     return decoded
 
 
 def hash_password(password: str) -> bytes:
