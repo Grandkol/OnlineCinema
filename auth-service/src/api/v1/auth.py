@@ -1,5 +1,5 @@
 from typing import Annotated
-
+import datetime
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi.encoders import jsonable_encoder
 from rest_framework import status
@@ -11,7 +11,11 @@ from models import User
 from core import utils
 from db import db_helper
 from services.auth import create_user as crud_create_user
-from services.auth import get_token
+from services.auth import (
+    get_token,
+    get_current_active_auth_user,
+    get_current_token_payload,
+)
 
 router = APIRouter()
 
@@ -33,12 +37,14 @@ async def auth_user(
 ):
     return await get_token(data=data, session=session)
 
+
 @router.get("/user/me/")
 def user_self_info(
-      user: User = Depends(get_current_active_auth_user),
+    user: User = Depends(get_current_active_auth_user),
+    payload: dict = Depends(get_current_token_payload),
 ):
-    return {
-        "login": user.login,
-        "email": user.email,
-    }
-
+    iat = payload.get("iat")
+    readable = datetime.datetime.fromtimestamp(iat).strftime("%Y-%m-%d %H:%M:%S")
+    return {"login": user.login,
+            "email": user.email,
+            "logged_in": readable,}

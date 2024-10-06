@@ -28,7 +28,7 @@ class User(Base):
     last_name: Mapped[Union[str, None]] = mapped_column(nullable=True)
     first_name: Mapped[Union[str, None]] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
-    is_active: Mapped[str] = mapped_column(default=True)
+    is_active: Mapped[bool] = mapped_column(default=True)
 
     def __init__(
         self, login: str, password: str, first_name: str, last_name: str
