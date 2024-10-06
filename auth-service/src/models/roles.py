@@ -28,7 +28,7 @@ roles_permissions_table = Table(
 class Roles(Base):
     __tablename__ = 'roles'
 
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4())
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     title: Mapped[str]
     created: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     permissions: Mapped[Optional[list["Permissions"]]] = relationship(secondary=roles_permissions_table, lazy='selectin')
@@ -47,7 +47,7 @@ class Category(Base):
 class Permissions(Base):
     __tablename__ = 'permissions'
 
-    id: Mapped[UUID] = mapped_column(primary_key=True)
-    category: Mapped[str]
-    action: Mapped[Category] = mapped_column(ForeignKey('category.id'))
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    category: Mapped[Category] = mapped_column(ForeignKey('category.id'))
+    action: Mapped[str]
     created: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
