@@ -3,22 +3,28 @@ from uuid import UUID
 from typing import Optional
 from datetime import datetime
 
+class PermissionCreate(BaseModel):
+    id: UUID
+    name: str
+
+
+class PermissionDb(PermissionCreate):
+    action: str
+    created: datetime
+
+
 class Role(BaseModel):
     id: UUID
     title: str
     created: datetime
-    permissions: Optional[list] = []
+    permissions: Optional[list[PermissionDb]] = []
 
     class Config:
         orm_mode = True
 
 
-class Permission(Role):
-    id: UUID
-    category: str
-    action: str
-    created: datetime
 
+# class PermissionResponse()
 
 class RoleCreate(BaseModel):
     title: str

@@ -1,4 +1,5 @@
 import uuid
+import enum
 from datetime import datetime
 from typing import Optional
 
@@ -8,12 +9,10 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import mapped_column
-from sqlalchemy import Boolean, Column, DateTime, String
+from sqlalchemy import Boolean, Column, DateTime, String, Enum
 from sqlalchemy.dialects.postgresql import UUID as UUID_PG
 from sqlalchemy.types import DateTime
 from uuid import UUID
-
-from werkzeug.security import check_password_hash, generate_password_hash
 
 from db.postgres import Base
 
@@ -38,9 +37,17 @@ class Roles(Base):
 
 
 
+class Category(Base):
+    __tablename__ = 'category'
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4())
+    title: Mapped[str]
+
+
+
 class Permissions(Base):
     __tablename__ = 'permissions'
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
-    name: Mapped[str]
+    category: Mapped[str]
+    action: Mapped[Category] = mapped_column(ForeignKey('category.id'))
     created: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
