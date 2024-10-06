@@ -31,15 +31,11 @@ async def encode_refresh_token(
                    )
     return jwt.encode(payload, key=private_key, algorithm=algorithm)
 
-def decode_access_token(
+def decode_token(
     token: str | bytes,
     public_key: str = settings.public_key_path.read_text(),
     algorithm: str = settings.auth_jwt.algorithm,
 ):
-
-    # print(public_key)
-    # print(algorithm)
-    print(f"Public Key: {public_key}")
 
     decoded = jwt.decode(token, key=public_key, algorithms=algorithm)
 

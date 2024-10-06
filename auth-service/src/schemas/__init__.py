@@ -3,6 +3,7 @@ __all__ = (
     "UserInDB",
     "TokenInfo",
     "AuthUser",
+    "RefreshToken",
 )
 
-from .entity import UserInDB, UserCreate, TokenInfo, AuthUser
+from .entity import UserInDB, UserCreate, TokenInfo, AuthUser, RefreshToken

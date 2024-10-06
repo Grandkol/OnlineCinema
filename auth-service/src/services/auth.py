@@ -13,13 +13,12 @@ from sqlalchemy.sql import text
 from datetime import timedelta, datetime
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from core import settings, encode_access_token, encode_refresh_token, decode_access_token
+from core import settings, encode_access_token, encode_refresh_token, decode_token
 from models import User
 from schemas import UserCreate
 from sqlalchemy.testing.config import ident
 from db import db_helper
 from sqlalchemy.testing.suite.test_reflection import users
-
 
 
 http_bearer = HTTPBearer()
@@ -51,12 +50,13 @@ async def get_token(data, session):
 
 
 async def _get_user_token(user: User, refresh_token=None):
-    access_payload = {"sub": user.login, "role": user.role}
+    access_payload = {"sub": user.login, "role": user.role, "type": "access"}
     refresh_payload = {
-        "sub": user.first_name,
+        "sub": user.login,
+        "type": "refresh",
     }
 
-    access_token_expiry = timedelta(minutes=5)
+    access_token_expiry = timedelta(minutes=15)
     refresh_token_expiry = timedelta(minutes=1000)
     access_token = await encode_access_token(access_payload, access_token_expiry)
     if not refresh_token:
@@ -67,18 +67,42 @@ async def _get_user_token(user: User, refresh_token=None):
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
+async def _get_tokens_from_refresh_token(
+        refresh_token: HTTPAuthorizationCredentials = Depends(TokenInfo),
+        session: AsyncSession = Depends(db_helper.session_getter)
+):
+    decoded = decode_token(refresh_token)
+    if decoded["type"] != "refresh":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="It is not a valid refresh token",
+        )
+    login = decoded["sub"]
+    user = await session.execute(select(User).where(User.login == login))
+    user = user.scalars().one()
+
+    return await _get_user_token(user=user)
+
+
 def get_current_token_payload(
-        credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
+    credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
 ) -> User:
     token = credentials.credentials
-    payload = decode_access_token(token=token)
+    payload = decode_token(token=token)
     return payload
 
 
 async def get_current_auth_user(
-        payload: dict = Depends(get_current_token_payload),
-        session: AsyncSession = Depends(db_helper.session_getter),
+    payload: dict = Depends(get_current_token_payload),
+    session: AsyncSession = Depends(db_helper.session_getter),
 ) -> User:
+    token_type = payload.get("type")
+    if token_type != "access":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token type",
+        )
+
     login: str | None = payload.get("sub")
     user = await session.execute(select(User).where(User.login == login))
     user = user.scalars().one()
@@ -91,7 +115,10 @@ async def get_current_auth_user(
 
     return user
 
-def get_current_active_auth_user(user: User = Depends(get_current_auth_user)):
+
+def get_current_active_auth_user(
+        user: User = Depends(get_current_auth_user)
+):
 
     if user.is_active:
         return user

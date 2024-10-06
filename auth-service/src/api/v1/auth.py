@@ -6,7 +6,7 @@ from rest_framework import status
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
 
-from schemas import UserInDB, UserCreate, TokenInfo, AuthUser
+from schemas import UserInDB, UserCreate, TokenInfo, AuthUser, RefreshToken
 from models import User
 from core import utils
 from db import db_helper
@@ -15,6 +15,7 @@ from services.auth import (
     get_token,
     get_current_active_auth_user,
     get_current_token_payload,
+    _get_tokens_from_refresh_token
 )
 
 router = APIRouter()
@@ -36,6 +37,14 @@ async def auth_user(
     session: AsyncSession = Depends(db_helper.session_getter),
 ):
     return await get_token(data=data, session=session)
+
+@router.post("/refresh", response_model=TokenInfo, status_code=status.HTTP_200_OK)
+async def auth_refresh_jwt(
+        refresh_token,
+        session: AsyncSession = Depends(db_helper.session_getter),
+):
+    return await _get_tokens_from_refresh_token(refresh_token=refresh_token, session=session)
+
 
 
 @router.get("/user/me/")
