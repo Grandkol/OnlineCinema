@@ -14,3 +14,4 @@ RUN  pip install --upgrade pip && pip install -r requirements.txt --no-cache-dir
 COPY ./src .
 
 CMD ["gunicorn", "-c", "gunicorn.conf.py", "main:app"]
+
