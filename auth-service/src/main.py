@@ -9,11 +9,12 @@ from api.v1 import auth
 from db import db_helper
 from models import Base
 from db.redis_db import redis
+from services import redis
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    redis = Redis(host=settings.redis_host, port=settings.redis_port, db=0, decode_responses=True)
+    print(await redis._get_redis_keys())
 
     yield
 

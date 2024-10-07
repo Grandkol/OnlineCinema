@@ -39,13 +39,17 @@ class Settings(BaseSettings):
         env_prefix="AUTH__",
     )
     project_name: str = Field("Auth", alias="PROJECT_NAME")
-    redis_host: str = Field("127.0.0.1", alias="REDIS_HOST")
+    redis_host: str = Field("localhost", alias="REDIS_HOST")
     redis_port: int = Field(6379, alias="REDIS_PORT")
 
 
-    private_key_path: Path = BASE_DIR / "certs" / "jwt-private.pem"
+    private_key_path: Path = BASE_DIR / "certs" / "private_key.pem"
+    public_key_path: Path = BASE_DIR / "certs" / "public_key.pem"
     auth_jwt: AuthJWT
     run_config: RunConfig = RunConfig()
+
+
+
 
     db: DatabaseConfig
 
@@ -53,5 +57,6 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-# print(settings.private_key_path.read_text())
-print(settings.auth_jwt.algorithm)
+
+# print(settings.public_key_path.read_text())
+# print(settings.auth_jwt.algorithm)
