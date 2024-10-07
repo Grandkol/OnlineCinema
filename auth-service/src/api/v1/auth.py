@@ -15,7 +15,8 @@ from services.auth import (
     get_token,
     get_current_active_auth_user,
     get_current_token_payload,
-    _get_tokens_from_refresh_token
+    _get_tokens_from_refresh_token,
+    _user_auth_logout
 )
 
 router = APIRouter()
@@ -26,7 +27,6 @@ async def create_user(
     user_create: Annotated[UserCreate, Depends(UserCreate)],
     session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
 ):
-
     user = await crud_create_user(session=session, user_create=user_create)
     return user
 
@@ -57,3 +57,14 @@ def user_self_info(
     return {"login": user.login,
             "email": user.email,
             "logged_in": readable,}
+
+
+@router.post("/logout")
+def user_logout(
+        user: User = Depends(_user_auth_logout),
+):
+    return f"user: {user.login} was logged out"
+
+@router.patch("/user")
+def user_auth_patch():
+    pass

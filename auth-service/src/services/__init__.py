@@ -1,4 +1,4 @@
-# __all__=(
-#     "cache"
-# )
-# from cache import cache
+__all__=(
+    "redis",
+)
+from .cache import redis

@@ -1,5 +1,5 @@
 from typing import Sequence
-
+import uuid
 from blib2to3.pgen2.tokenize import TokenInfo
 from django.contrib.auth import login
 from dns.e164 import query
@@ -19,9 +19,13 @@ from schemas import UserCreate
 from sqlalchemy.testing.config import ident
 from db import db_helper
 from sqlalchemy.testing.suite.test_reflection import users
+from services import redis
 
 
 http_bearer = HTTPBearer()
+
+ACCESS_EXPIRY = timedelta(minutes=15)
+REFRESH_EXPIRY = timedelta(minutes=1000)
 
 
 async def create_user(
@@ -48,28 +52,43 @@ async def get_token(data, session):
 
     return await _get_user_token(user=user)
 
+async def validate_access_token(payload: str):
+    key = f"{payload["token_id"]}:access_denied"
+    if await redis._get_from_redis(key):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are logged out and don't have access to this information. Please Log In again",
+        )
+
 
 async def _get_user_token(user: User, refresh_token=None):
-    access_payload = {"sub": user.login, "role": user.role, "type": "access"}
+    access_payload = {
+        "token_id": str(uuid.uuid4()),
+        "sub": user.login,
+        "role": user.role,
+        "type": "access",
+    }
     refresh_payload = {
+        "token_id": str(uuid.uuid4()),
         "sub": user.login,
         "type": "refresh",
     }
 
-    access_token_expiry = timedelta(minutes=15)
-    refresh_token_expiry = timedelta(minutes=1000)
-    access_token = await encode_access_token(access_payload, access_token_expiry)
+    key = f"{user.id}:refresh_token"
+    access_token = await encode_access_token(access_payload, ACCESS_EXPIRY)
+
     if not refresh_token:
-        refresh_token = await encode_refresh_token(
-            refresh_payload, refresh_token_expiry
-        )
+        refresh_token = await encode_refresh_token(refresh_payload, REFRESH_EXPIRY)
+
+    await redis._put_to_redis(key=key, token=refresh_token)
+    print(await redis._get_redis_keys())
 
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
 async def _get_tokens_from_refresh_token(
-        refresh_token: HTTPAuthorizationCredentials = Depends(TokenInfo),
-        session: AsyncSession = Depends(db_helper.session_getter)
+    refresh_token: HTTPAuthorizationCredentials = Depends(TokenInfo),
+    session: AsyncSession = Depends(db_helper.session_getter),
 ):
     decoded = decode_token(refresh_token)
     if decoded["type"] != "refresh":
@@ -84,11 +103,12 @@ async def _get_tokens_from_refresh_token(
     return await _get_user_token(user=user)
 
 
-def get_current_token_payload(
+async def get_current_token_payload(
     credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
 ) -> User:
     token = credentials.credentials
     payload = decode_token(token=token)
+    await validate_access_token(payload)
     return payload
 
 
@@ -116,9 +136,7 @@ async def get_current_auth_user(
     return user
 
 
-def get_current_active_auth_user(
-        user: User = Depends(get_current_auth_user)
-):
+def get_current_active_auth_user(user: User = Depends(get_current_auth_user)):
 
     if user.is_active:
         return user
@@ -126,3 +144,35 @@ def get_current_active_auth_user(
         status_code=status.HTTP_403_FORBIDDEN,
         detail="Inactive user",
     )
+
+
+async def _user_auth_logout(
+    payload: dict = Depends(get_current_token_payload),
+    session: AsyncSession = Depends(db_helper.session_getter),
+):
+    token_type = payload.get("type")
+    if token_type != "access":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You are not authentified to logout, please proceed with login",
+        )
+
+    login: str | None = payload.get("sub")
+
+    user = await session.execute(select(User).where(User.login == login))
+    user = user.scalars().one()
+    key_refresh_delete = f"{user.id}:refresh_token"
+    key_access_denied = f"{payload.get('token_id')}:access_denied"
+    access_token_denied = await encode_access_token(payload, ACCESS_EXPIRY)
+
+    if await redis._get_from_redis(key_access_denied):
+        raise HTTPException(
+            status_code=status.HTTP_417_EXPECTATION_FAILED,
+            detail="You had already logged out.",
+        )
+
+    await redis._put_to_redis(key=key_access_denied, token=access_token_denied)
+    await redis._delete_from_redis(key=key_refresh_delete)
+    print(await redis._get_redis_keys())
+
+    return user
