@@ -9,6 +9,7 @@ class Action(Enum):
     write = 'write'
     delete = 'delete'
 
+
 class Category(BaseModel):
     id: UUID
     title: str

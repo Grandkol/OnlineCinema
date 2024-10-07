@@ -28,7 +28,12 @@ roles_permissions_table = Table(
 class Roles(Base):
     __tablename__ = 'roles'
 
+<<<<<<< Updated upstream
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+=======
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4())
+>>>>>>> Stashed changes
     title: Mapped[str]
     created: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     permissions: Mapped[Optional[list["Permissions"]]] = relationship(secondary=roles_permissions_table, lazy='selectin')

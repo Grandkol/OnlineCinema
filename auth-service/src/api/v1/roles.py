@@ -3,6 +3,7 @@ from models.roles import Roles, Permissions
 from schemas.roles import Role, RoleCreate, PermissionDb, PermissionCreate
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
+from service.role import DatabaseService, get_db_service
 from db.postgres import get_session
 from http import HTTPStatus
 from uuid import UUID
@@ -11,21 +12,25 @@ from service.role import get_db_service, DatabaseService
 
 router = APIRouter()
 
+
 @router.post("/create", response_model=Role, status_code=HTTPStatus.CREATED)
 async def create_role(role_create: RoleCreate, db: DatabaseService = Depends(get_db_service)) -> Role:
     role_dto = jsonable_encoder(role_create)
     role = await db.create_role(role_dto)
     if not role:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Wrong permission")
+
     return role
 
 
 
 @router.post("/role/permissions/create", response_model=PermissionDb)
-async def create_permission(permission_create: PermissionCreate, db: DatabaseService = Depends(get_db_service)) -> PermissionDb:
+async def create_permission(permission_create: PermissionCreate | list[PermissionCreate], db_service: DatabaseService = Depends(get_session)) -> PermissionDb:
+
     permission_dto = jsonable_encoder(permission_create)
-    permission = await db.create_permission(permission_dto)
+    permission = await db_service.create_permission(permission_dto)
     return permission
+    
     
 
 @router.get("/roles", response_model=PermissionDb)
