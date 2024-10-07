@@ -57,5 +57,6 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
 # print(settings.public_key_path.read_text())
 # print(settings.auth_jwt.algorithm)

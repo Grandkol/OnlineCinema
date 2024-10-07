@@ -74,3 +74,4 @@ services:
 volumes:
   redis:
   elastic:
+
