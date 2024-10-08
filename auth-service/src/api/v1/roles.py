@@ -4,7 +4,7 @@ from schemas.roles import Role, RoleCreate, PermissionDb, PermissionCreate
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
 from services.role import DatabaseService, get_db_service
-from db.postgres import get_session
+from db import db_helper
 from http import HTTPStatus
 from uuid import UUID
 from sqlalchemy import select
@@ -25,7 +25,7 @@ async def create_role(role_create: RoleCreate, db: DatabaseService = Depends(get
 
 
 @router.post("/role/permissions/create", response_model=PermissionDb)
-async def create_permission(permission_create: PermissionCreate | list[PermissionCreate], db_service: DatabaseService = Depends(get_session)) -> PermissionDb:
+async def create_permission(permission_create: PermissionCreate | list[PermissionCreate], db_service: DatabaseService = Depends(db_helper.session_getter)) -> PermissionDb:
 
     permission_dto = jsonable_encoder(permission_create)
     permission = await db_service.create_permission(permission_dto)

@@ -12,7 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
 from datetime import timedelta, datetime
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-
+from sqlalchemy import update
+from werkzeug.security import check_password_hash, generate_password_hash
 from core import settings, encode_access_token, encode_refresh_token, decode_token
 from models import User
 from schemas import UserCreate
@@ -20,6 +21,7 @@ from sqlalchemy.testing.config import ident
 from db import db_helper
 from sqlalchemy.testing.suite.test_reflection import users
 from services import redis
+from schemas import UserInDB, UserCreate, TokenInfo, AuthUser, RefreshToken
 
 
 http_bearer = HTTPBearer()
@@ -52,6 +54,7 @@ async def get_token(data, session):
 
     return await _get_user_token(user=user)
 
+
 async def validate_access_token(payload: str):
     key = f"{payload["token_id"]}:access_denied"
     if await redis._get_from_redis(key):
@@ -64,13 +67,13 @@ async def validate_access_token(payload: str):
 async def _get_user_token(user: User, refresh_token=None):
     access_payload = {
         "token_id": str(uuid.uuid4()),
-        "sub": user.login,
+        "sub": str(user.id),
         "role": user.role,
         "type": "access",
     }
     refresh_payload = {
         "token_id": str(uuid.uuid4()),
-        "sub": user.login,
+        "sub": str(user.id),
         "type": "refresh",
     }
 
@@ -96,8 +99,8 @@ async def _get_tokens_from_refresh_token(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="It is not a valid refresh token",
         )
-    login = decoded["sub"]
-    user = await session.execute(select(User).where(User.login == login))
+    User_id = decoded["sub"]
+    user = await session.execute(select(User).where(User.id == User_id))
     user = user.scalars().one()
 
     return await _get_user_token(user=user)
@@ -123,8 +126,8 @@ async def get_current_auth_user(
             detail="Invalid token type",
         )
 
-    login: str | None = payload.get("sub")
-    user = await session.execute(select(User).where(User.login == login))
+    User_id: str | None = payload.get("sub")
+    user = await session.execute(select(User).where(User.id == User_id))
     user = user.scalars().one()
 
     if user is None:
@@ -146,7 +149,7 @@ def get_current_active_auth_user(user: User = Depends(get_current_auth_user)):
     )
 
 
-async def _user_auth_logout(
+async def user_auth_logout(
     payload: dict = Depends(get_current_token_payload),
     session: AsyncSession = Depends(db_helper.session_getter),
 ):
@@ -157,9 +160,9 @@ async def _user_auth_logout(
             detail="You are not authentified to logout, please proceed with login",
         )
 
-    login: str | None = payload.get("sub")
+    User_id: str | None = payload.get("sub")
 
-    user = await session.execute(select(User).where(User.login == login))
+    user = await session.execute(select(User).where(User.login == User_id))
     user = user.scalars().one()
     key_refresh_delete = f"{user.id}:refresh_token"
     key_access_denied = f"{payload.get('token_id')}:access_denied"
@@ -173,6 +176,46 @@ async def _user_auth_logout(
 
     await redis._put_to_redis(key=key_access_denied, token=access_token_denied)
     await redis._delete_from_redis(key=key_refresh_delete)
-    print(await redis._get_redis_keys())
 
     return user
+
+
+async def user_patch_data(
+    user_data: UserCreate,
+    payload: dict,
+    session: AsyncSession,
+):
+    user_id = payload.get("sub")
+    user = await session.execute(select(User).where(User.id == user_id))
+    user = user.scalars().one()
+
+    await session.execute(
+        update(User).where(User.login == user.login).values(login=user_data.login)
+    )
+    hashed_password = generate_password_hash(user_data.password)
+
+    await session.execute(
+        update(User)
+        .where(User.password == user.password)
+        .values(password=hashed_password)
+    )
+    await session.execute(
+        update(User)
+        .where(User.first_name == user.first_name)
+        .values(first_name=user_data.first_name)
+    )
+    await session.execute(
+        update(User)
+        .where(User.last_name == user.last_name)
+        .values(last_name=user_data.last_name)
+    )
+
+    await session.commit()
+    await session.refresh(user)
+
+    return {
+        "login": user.login,
+        "first_name": user.first_name,
+        "password": user.password,
+        "last_name": user.last_name,
+    }

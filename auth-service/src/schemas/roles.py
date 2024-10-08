@@ -32,8 +32,6 @@ class Role(BaseModel):
     created: datetime
     permissions: Optional[list[PermissionDb]] = []
 
-    class Config:
-        orm_mode = True
 
 
 
