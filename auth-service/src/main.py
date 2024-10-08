@@ -12,6 +12,7 @@ from db.redis_db import redis
 from services import redis
 
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print(await redis._get_redis_keys())
@@ -34,6 +35,7 @@ app = FastAPI(
 
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+# app.include_router(roles.router, prefix="/api/v1/roles", tags=["roles"])
 
 
 if __name__ == "__main__":

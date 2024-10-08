@@ -6,8 +6,10 @@ from models.roles import Permissions, Roles, Category
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 from sqlalchemy import select
 
+from core import settings
 
-db = DatabaseHelper() # Укажи URL
+
+db = DatabaseHelper(str(settings.db.url)) # Укажи URL
 
 class AbstractService(ABC):
     

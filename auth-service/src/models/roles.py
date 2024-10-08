@@ -14,7 +14,7 @@ from sqlalchemy.dialects.postgresql import UUID as UUID_PG
 from sqlalchemy.types import DateTime
 from uuid import UUID
 
-from db.postgres import Base
+from models import Base
 
 
 roles_permissions_table = Table(
@@ -25,30 +25,23 @@ roles_permissions_table = Table(
     Column('permission_id', ForeignKey("permissions.id")),
 )
 
-class Roles(Base):
-    __tablename__ = 'roles'
+class Role(Base):
 
-
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    # id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     title: Mapped[str]
     created: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     permissions: Mapped[Optional[list["Permissions"]]] = relationship(secondary=roles_permissions_table, lazy='selectin')
 
 
-
-
-
 class Category(Base):
-    __tablename__ = 'category'
+    __tablename__ = "category"
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4())
     title: Mapped[str]
 
 
-
 class Permissions(Base):
-    __tablename__ = 'permissions'
 
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    # id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     category: Mapped[Category] = mapped_column(ForeignKey('category.id'))
     action: Mapped[str]
     created: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
